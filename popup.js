@@ -15,12 +15,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
     document.body.classList.toggle("light-theme", !isDarkMode)
     document.body.classList.toggle("dark-theme", isDarkMode)
-    document
-      .getElementById("folder-list")
-      .classList.toggle("light-theme", !isDarkMode)
-    document
-      .getElementById("folder-list")
-      .classList.toggle("dark-theme", isDarkMode)
+    folderListDiv.classList.toggle("light-theme", !isDarkMode)
+    folderListDiv.classList.toggle("dark-theme", isDarkMode)
+    searchInput.classList.toggle("light-theme", !isDarkMode)
+    searchInput.classList.toggle("dark-theme", isDarkMode)
+    folderFilter.classList.toggle("light-theme", !isDarkMode)
+    folderFilter.classList.toggle("dark-theme", isDarkMode)
+    sortFilter.classList.toggle("light-theme", !isDarkMode)
+    sortFilter.classList.toggle("dark-theme", isDarkMode)
+    createFolderButton.classList.toggle("light-theme", !isDarkMode)
+    createFolderButton.classList.toggle("dark-theme", isDarkMode)
+    addToFolderButton.classList.toggle("light-theme", !isDarkMode)
+    addToFolderButton.classList.toggle("dark-theme", isDarkMode)
+    bookmarkCountDiv.classList.toggle("light-theme", !isDarkMode)
+    bookmarkCountDiv.classList.toggle("dark-theme", isDarkMode)
   }
   updateTheme()
   window

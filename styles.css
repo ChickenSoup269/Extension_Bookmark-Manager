@@ -1,15 +1,15 @@
 body {
   width: 360px;
   font-family: Arial, sans-serif;
-  background-color: #1f2937; /* Dark mode default */
-  color: #e5e7eb;
+  background-color: #000000; /* Black for dark theme */
+  color: #ffffff; /* White text for dark theme */
   margin: 0;
   padding: 0;
 }
 
 body.light-theme {
-  background-color: #f8f9fa;
-  color: #333;
+  background-color: #ffffff; /* White for light theme */
+  color: #000000; /* Black text for light theme */
 }
 
 .container {
@@ -33,31 +33,31 @@ body.light-theme {
 .input {
   flex-grow: 1;
   padding: 0.25rem;
-  border: 1px solid #4b5563;
+  border: 1px solid #333333; /* Darker border for dark theme */
   border-radius: 0.25rem;
-  background-color: #374151;
-  color: #e5e7eb;
+  background-color: #1a1a1a; /* Dark gray input background */
+  color: #ffffff; /* White text */
 }
 
 .input.light-theme {
-  border-color: #d1d5db;
-  background-color: #ffffff;
-  color: #333;
+  border-color: #cccccc; /* Lighter border for light theme */
+  background-color: #f5f5f5; /* Light gray input background */
+  color: #000000; /* Black text */
 }
 
 .select {
   padding: 0.25rem;
-  border: 1px solid #4b5563;
+  border: 1px solid #333333; /* Darker border */
   border-radius: 0.25rem;
-  background-color: #374151;
-  color: #e5e7eb;
+  background-color: #1a1a1a; /* Dark gray select background */
+  color: #ffffff; /* White text */
   width: 150px;
 }
 
 .select.light-theme {
-  border-color: #d1d5db;
-  background-color: #ffffff;
-  color: #333;
+  border-color: #cccccc; /* Lighter border */
+  background-color: #f5f5f5; /* Light gray select background */
+  color: #000000; /* Black text */
 }
 
 .select.small {
@@ -74,66 +74,91 @@ body.light-theme {
   transition: background-color 0.2s;
 }
 
-.button.create {
-  background-color: #10b981; /* Green for Create Folder */
+.button.create.dark-theme {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.button.create.light-theme {
+  background-color: #fe0000;
+  color: #000000;
 }
 
 .button.add {
-  background-color: #10b981; /* Green for Add to Folder */
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.button.add.light-theme {
+  background-color: #000000;
+  color: #ffffff; /* White text */
 }
 
 .button.back {
-  background-color: #6b7280;
-  margin-left: 0.25rem;
+  background-color: #333333; /* Dark gray for back button */
+  color: #ffffff; /* White text */
+}
+
+.button.back.light-theme {
+  background-color: #cccccc; /* Light gray for back button */
+  color: #000000; /* Black text */
 }
 
 .button.create:hover,
 .button.add:hover {
-  background-color: #059669;
+  background-color: #cccccc; /* Light gray on hover for dark theme */
 }
 
 .button.back:hover {
-  background-color: #9ca3af;
-}
-
-.button.light-theme.create,
-.button.light-theme.add {
-  background-color: #10b981;
+  background-color: #555555; /* Slightly lighter gray on hover */
 }
 
 .button.light-theme.create:hover,
 .button.light-theme.add:hover {
-  background-color: #059669;
-}
-
-.button.light-theme.back {
-  background-color: #d1d5db;
+  background-color: #333333; /* Dark gray on hover for light theme */
 }
 
 .button.light-theme.back:hover {
-  background-color: #9ca3af;
+  background-color: #999999; /* Medium gray on hover */
 }
 
 .count {
   font-size: 0.9rem;
-  color: #d1d5db;
   text-align: center;
   margin-bottom: 0.5rem;
 }
 
+.count.dark-theme {
+  color: #ffffff; /* Light gray for count in dark theme */
+}
+
 .count.light-theme {
-  color: #666;
+  color: rgb(0, 0, 0);
 }
 
 .folder-list {
-  background-color: #374151;
+  background-color: #1a1a1a; /* Dark gray for folder list */
   padding: 1rem;
   border-radius: 0.25rem;
 }
 
 .folder-list.light-theme {
-  background-color: #ffffff;
-  color: #333;
+  background-color: #cfcece; /* Light gray for folder list */
+}
+
+.link {
+  flex-grow: 1;
+  color: #ffffff; /* Màu mặc định cho dark theme */
+  text-decoration: none;
+}
+
+.link:hover {
+  color: #cccccc; /* Light gray on hover */
+  text-decoration: underline;
+}
+
+.link.light-theme:hover {
+  color: #ff0000; /* Dark gray on hover */
 }
 
 .select-all {
@@ -145,12 +170,13 @@ body.light-theme {
   padding: 0.5rem;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #4b5563;
+  border-bottom: 1px solid #333333; /* Dark border for dark theme */
 }
 
 .bookmark-item.light-theme,
 .folder-item.light-theme {
-  border-bottom-color: #e5e7eb;
+  color: black;
+  border-bottom-color: #000000; /* Light border for light theme */
 }
 
 .favicon {
@@ -160,25 +186,6 @@ body.light-theme {
   border-radius: 8px;
 }
 
-.link {
-  flex-grow: 1;
-  color: #ffffff; /* Green link color */
-  text-decoration: none;
-}
-
-.link:hover {
-  color: #3684fa;
-  text-decoration: underline;
-}
-
-.link.light-theme {
-  color: #ffffff;
-}
-
-.link.light-theme:hover {
-  color: #059669;
-}
-
 .dropdown-btn-group {
   position: relative;
 }
@@ -186,39 +193,39 @@ body.light-theme {
 .dropdown-btn {
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
-  background-color: #6b7280;
-  color: #e5e7eb;
+  background-color: #333333; /* Dark gray button */
+  color: #ffffff; /* White text */
   border: none;
   border-radius: 0.25rem;
   cursor: pointer;
 }
 
 .dropdown-btn:hover {
-  background-color: #9ca3af;
+  background-color: #555555; /* Slightly lighter gray on hover */
 }
 
 .dropdown-btn.light-theme {
-  background-color: #e5e7eb;
-  color: #333;
+  background-color: #000000; /* Light gray button */
+  color: #000000; /* Black text */
 }
 
 .dropdown-btn.light-theme:hover {
-  background-color: #d1d5db;
+  background-color: #ffffff; /* Medium gray on hover */
 }
 
 .dropdown-menu {
   position: absolute;
   right: 0;
   z-index: 10;
-  background-color: #374151;
-  border: 1px solid #4b5563;
+  background-color: #1a1a1a; /* Dark gray menu */
+  border: 1px solid #333333; /* Dark border */
   border-radius: 0.25rem;
   min-width: 100px;
 }
 
 .dropdown-menu.light-theme {
-  background-color: #ffffff;
-  border-color: #e5e7eb;
+  background-color: #f5f5f5; /* Light gray menu */
+  border-color: #cccccc; /* Light border */
 }
 
 .menu-item {
@@ -228,42 +235,42 @@ body.light-theme {
   text-align: left;
   background: none;
   border: none;
-  color: #e5e7eb;
+  color: #ffffff; /* White text for dark theme */
   cursor: pointer;
 }
 
 .menu-item:hover {
-  background-color: #6b7280;
+  background-color: #333333; /* Dark gray on hover */
 }
 
 .menu-item.light-theme {
-  color: #333;
+  color: #000000; /* Black text for light theme */
 }
 
 .menu-item.light-theme:hover {
-  background-color: #f3f4f6;
+  background-color: #cccccc; /* Light gray on hover */
 }
 
 .delete-folder {
   margin-left: 0.5rem;
   padding: 0.25rem 0.5rem;
-  background-color: #ef4444;
-  color: #e5e7eb;
+  background-color: #ff0000; /* Red for delete */
+  color: #ffffff; /* White text */
   border: none;
   border-radius: 0.25rem;
   cursor: pointer;
 }
 
 .delete-folder:hover {
-  background-color: #dc2626;
+  background-color: #cc0000; /* Darker red on hover */
 }
 
 .delete-folder.light-theme {
-  background-color: #ef4444;
+  background-color: #ff0000; /* Red for delete */
 }
 
 .delete-folder.light-theme:hover {
-  background-color: #dc2626;
+  background-color: #cc0000; /* Darker red on hover */
 }
 
 /* Scrollbar styles */
@@ -273,32 +280,33 @@ body.light-theme {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: #000000; /* Black track for dark theme */
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-track.light-theme {
-  background: #f8f9fa;
+  background: #ffffff; /* White track for light theme */
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #6b7280;
+  background-color: #333333; /* Dark gray thumb */
   border-radius: 10px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb.light-theme {
-  background-color: #bbb;
+  background-color: #cccccc; /* Light gray thumb */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #9ca3af;
+  background-color: #555555; /* Slightly lighter gray on hover */
 }
 
 ::-webkit-scrollbar-thumb.light-theme:hover {
-  background-color: #999;
+  background-color: #999999; /* Medium gray on hover */
 }
+
 .dropdown-btn {
   font-size: 0.875rem; /* text-sm */
   color: black;
@@ -309,7 +317,8 @@ body.light-theme {
   cursor: pointer;
 }
 .dropdown-btn:hover {
-  background-color: #4b93ff; /* hover:bg-gray-300 */
+  color: white;
+  background-color: #000000; /* hover:bg-gray-300 */
 }
 
 .dropdown-menu {
@@ -338,9 +347,14 @@ body.light-theme {
   font-size: 0.9rem;
 }
 .menu-item:hover {
-  background-color: #276fff; /* hover:bg-gray-100 */
+  color: black;
+  background-color: #ffffff; /* hover:bg-gray-100 */
 }
 
-.favicon {
-  border-radius: 8px;
+.logo {
+  width: 320px;
+  height: 100px;
+  margin: 0 auto;
+  padding-bottom: 10px;
+  display: block;
 }
