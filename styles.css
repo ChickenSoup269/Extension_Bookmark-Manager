@@ -1,0 +1,65 @@
+.dropdown {
+  display: block;
+}
+.dropdown.hidden {
+  display: none;
+}
+#folder-filter {
+  width: 150px;
+}
+#folder-list > div {
+  margin-bottom: 8px;
+}
+.dropdown-btn-group {
+  position: relative;
+}
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  z-index: 10;
+}
+button,
+select {
+  transition: background-color 0.2s;
+}
+#folder-list .border-b {
+  border-bottom-width: 1px;
+}
+#folder-list .dropdown-menu button {
+  min-width: 100px;
+}
+#add-to-folder {
+  margin-left: 8px;
+}
+.back-btn {
+  margin-left: 4px;
+}
+#bookmark-count {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Áp dụng cho toàn bộ trang hoặc container có cuộn */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Track (nền của scrollbar) */
+::-webkit-scrollbar-track {
+  background: transparent; /* hoặc #f0f0f0 */
+  border-radius: 10px;
+}
+
+/* Thumb (phần kéo được) */
+::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 10px;
+  border: 2px solid transparent; /* tạo hiệu ứng bóng */
+  background-clip: content-box;
+}
+
+/* Hover effect */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}

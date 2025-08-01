@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookmark Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4 text-center">Bookmark Manager</h1>
+        <div class="flex space-x-2 mb-4">
+            <input type="text" id="search" placeholder="Search bookmarks..." class="flex-grow p-2 border rounded">
+            <select id="folder-filter" class="p-2 border rounded w-40">
+                <option value="">All Bookmarks</option>
+            </select>
+            <button id="create-folder" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Create
+                Folder</button>
+            <button id="add-to-folder" class="p-2 bg-green-500 text-white rounded hover:bg-green-600 hidden">Add to
+                Folder</button>
+        </div>
+        <div id="bookmark-count" class="text-center mb-2"></div>
+        <div id="folder-list" class="bg-white p-4 rounded shadow"></div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>

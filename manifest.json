@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Bookmark Manager",
+  "version": "1.0",
+  "description": "A user-friendly Chrome bookmark manager with search functionality",
+  "permissions": ["bookmarks"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
