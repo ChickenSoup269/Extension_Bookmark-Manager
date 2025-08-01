@@ -1,65 +1,352 @@
-.dropdown {
-  display: block;
+body {
+  width: 340px;
+  font-family: Arial, sans-serif;
+  background-color: #1f2937; /* Dark mode default */
+  color: #e5e7eb;
+  margin: 0;
+  padding: 0;
 }
-.dropdown.hidden {
-  display: none;
+
+body.light-theme {
+  background-color: #f8f9fa;
+  color: #333;
 }
-#folder-filter {
+
+.container {
+  padding: 1rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.input {
+  flex-grow: 1;
+  padding: 0.25rem;
+  border: 1px solid #4b5563;
+  border-radius: 0.25rem;
+  background-color: #374151;
+  color: #e5e7eb;
+}
+
+.input.light-theme {
+  border-color: #d1d5db;
+  background-color: #ffffff;
+  color: #333;
+}
+
+.select {
+  padding: 0.25rem;
+  border: 1px solid #4b5563;
+  border-radius: 0.25rem;
+  background-color: #374151;
+  color: #e5e7eb;
   width: 150px;
 }
-#folder-list > div {
-  margin-bottom: 8px;
+
+.select.light-theme {
+  border-color: #d1d5db;
+  background-color: #ffffff;
+  color: #333;
 }
+
+.select.small {
+  padding: 0.25rem;
+  margin-left: 0.5rem;
+}
+
+.button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button.create {
+  background-color: #10b981; /* Green for Create Folder */
+}
+
+.button.add {
+  background-color: #10b981; /* Green for Add to Folder */
+}
+
+.button.back {
+  background-color: #6b7280;
+  margin-left: 0.25rem;
+}
+
+.button.create:hover,
+.button.add:hover {
+  background-color: #059669;
+}
+
+.button.back:hover {
+  background-color: #9ca3af;
+}
+
+.button.light-theme.create,
+.button.light-theme.add {
+  background-color: #10b981;
+}
+
+.button.light-theme.create:hover,
+.button.light-theme.add:hover {
+  background-color: #059669;
+}
+
+.button.light-theme.back {
+  background-color: #d1d5db;
+}
+
+.button.light-theme.back:hover {
+  background-color: #9ca3af;
+}
+
+.count {
+  font-size: 0.9rem;
+  color: #d1d5db;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.count.light-theme {
+  color: #666;
+}
+
+.folder-list {
+  background-color: #374151;
+  padding: 1rem;
+  border-radius: 0.25rem;
+}
+
+.folder-list.light-theme {
+  background-color: #ffffff;
+  color: #333;
+}
+
+.select-all {
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.select-all input {
+  margin-right: 0.5rem;
+}
+
+.bookmark-item,
+.folder-item {
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #4b5563;
+}
+
+.bookmark-item.light-theme,
+.folder-item.light-theme {
+  border-bottom-color: #e5e7eb;
+}
+
+.favicon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.link {
+  flex-grow: 1;
+  color: #ffffff; /* Green link color */
+  text-decoration: none;
+}
+
+.link:hover {
+  color: #3684fa;
+  text-decoration: underline;
+}
+
+.link.light-theme {
+  color: #ffffff;
+}
+
+.link.light-theme:hover {
+  color: #059669;
+}
+
 .dropdown-btn-group {
   position: relative;
 }
+
+.dropdown-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  background-color: #6b7280;
+  color: #e5e7eb;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.dropdown-btn:hover {
+  background-color: #9ca3af;
+}
+
+.dropdown-btn.light-theme {
+  background-color: #e5e7eb;
+  color: #333;
+}
+
+.dropdown-btn.light-theme:hover {
+  background-color: #d1d5db;
+}
+
 .dropdown-menu {
   position: absolute;
   right: 0;
   z-index: 10;
-}
-button,
-select {
-  transition: background-color 0.2s;
-}
-#folder-list .border-b {
-  border-bottom-width: 1px;
-}
-#folder-list .dropdown-menu button {
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 0.25rem;
   min-width: 100px;
 }
-#add-to-folder {
-  margin-left: 8px;
-}
-.back-btn {
-  margin-left: 4px;
-}
-#bookmark-count {
-  font-size: 0.9rem;
-  color: #666;
+
+.dropdown-menu.light-theme {
+  background-color: #ffffff;
+  border-color: #e5e7eb;
 }
 
-/* Áp dụng cho toàn bộ trang hoặc container có cuộn */
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.25rem;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background-color: #6b7280;
+}
+
+.menu-item.light-theme {
+  color: #333;
+}
+
+.menu-item.light-theme:hover {
+  background-color: #f3f4f6;
+}
+
+.delete-folder {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #ef4444;
+  color: #e5e7eb;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.delete-folder:hover {
+  background-color: #dc2626;
+}
+
+.delete-folder.light-theme {
+  background-color: #ef4444;
+}
+
+.delete-folder.light-theme:hover {
+  background-color: #dc2626;
+}
+
+/* Scrollbar styles */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-/* Track (nền của scrollbar) */
 ::-webkit-scrollbar-track {
-  background: transparent; /* hoặc #f0f0f0 */
+  background: #1f2937;
   border-radius: 10px;
 }
 
-/* Thumb (phần kéo được) */
+::-webkit-scrollbar-track.light-theme {
+  background: #f8f9fa;
+}
+
 ::-webkit-scrollbar-thumb {
-  background-color: #bbb;
+  background-color: #6b7280;
   border-radius: 10px;
-  border: 2px solid transparent; /* tạo hiệu ứng bóng */
+  border: 2px solid transparent;
   background-clip: content-box;
 }
 
-/* Hover effect */
+::-webkit-scrollbar-thumb.light-theme {
+  background-color: #bbb;
+}
+
 ::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+::-webkit-scrollbar-thumb.light-theme:hover {
   background-color: #999;
+}
+
+.dropdown-btn {
+  font-size: 0.875rem; /* text-sm */
+  color: black;
+  background-color: white; /* bg-gray-200 */
+  padding: 4px 8px; /* px-2 py-1 */
+  border-radius: 6px; /* rounded */
+  border: none;
+  cursor: pointer;
+}
+.dropdown-btn:hover {
+  background-color: #4b93ff; /* hover:bg-gray-300 */
+}
+
+.dropdown-menu {
+  position: absolute;
+  color: white;
+  background-color: black;
+  border: 1px solid #e5e7eb; /* border-gray-200 */
+  border-radius: 6px;
+  margin-top: 4px; /* mt-1 */
+  padding: 4px; /* p-1 */
+  z-index: 10;
+}
+
+.dropdown-menu.hidden {
+  display: none;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 4px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.menu-item:hover {
+  background-color: #276fff; /* hover:bg-gray-100 */
+}
+
+.favicon {
+  border-radius: 8px;
 }
