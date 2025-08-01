@@ -1,5 +1,5 @@
 body {
-  width: 340px;
+  width: 360px;
   font-family: Arial, sans-serif;
   background-color: #1f2937; /* Dark mode default */
   color: #e5e7eb;
@@ -138,12 +138,6 @@ body.light-theme {
 
 .select-all {
   margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-}
-
-.select-all input {
-  margin-right: 0.5rem;
 }
 
 .bookmark-item,
@@ -163,6 +157,7 @@ body.light-theme {
   width: 1.25rem;
   height: 1.25rem;
   margin-right: 0.5rem;
+  border-radius: 8px;
 }
 
 .link {
@@ -304,7 +299,6 @@ body.light-theme {
 ::-webkit-scrollbar-thumb.light-theme:hover {
   background-color: #999;
 }
-
 .dropdown-btn {
   font-size: 0.875rem; /* text-sm */
   color: black;

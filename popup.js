@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const addToFolderButton = document.getElementById("add-to-folder")
   const folderListDiv = document.getElementById("folder-list")
   const bookmarkCountDiv = document.getElementById("bookmark-count")
-  const selectAllCheckbox = document.getElementById("select-all")
   let bookmarks = []
   let folders = []
   let selectedBookmarks = new Set()
@@ -117,10 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const sortType = sortFilter.value
     const sortedBookmarks = sortBookmarks(bookmarksList, sortType)
     folderListDiv.innerHTML = `
-      <div class="select-all">
-        <input type="checkbox" id="select-all">
-        <label for="select-all">Select All</label>
-      </div>
+      <div class="select-all"></div>
     `
     sortedBookmarks.forEach((bookmark) => {
       if (bookmark.url) {
@@ -130,9 +126,6 @@ document.addEventListener("DOMContentLoaded", () => {
           new URL(bookmark.url).hostname
         }`
         div.innerHTML = `
-          <input type="checkbox" class="bookmark-checkbox" data-id="${
-            bookmark.id
-          }">
           <img src="${favicon}" alt="favicon" class="favicon">
           <a href="${bookmark.url}" target="_blank" class="link">${
           bookmark.title || bookmark.url
@@ -154,37 +147,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         folderListDiv.appendChild(div)
       }
-    })
-
-    // Add event listeners for checkboxes
-    document.querySelectorAll(".bookmark-checkbox").forEach((checkbox) => {
-      checkbox.addEventListener("change", (e) => {
-        const bookmarkId = e.target.dataset.id
-        if (e.target.checked) {
-          selectedBookmarks.add(bookmarkId)
-        } else {
-          selectedBookmarks.delete(bookmarkId)
-        }
-        addToFolderButton.classList.toggle(
-          "hidden",
-          selectedBookmarks.size === 0
-        )
-        selectAllCheckbox.checked =
-          selectedBookmarks.size === sortedBookmarks.filter((b) => b.url).length
-      })
-    })
-
-    // Add event listener for Select All
-    selectAllCheckbox.addEventListener("change", (e) => {
-      const allChecked = e.target.checked
-      selectedBookmarks.clear()
-      document.querySelectorAll(".bookmark-checkbox").forEach((checkbox) => {
-        checkbox.checked = allChecked
-        if (allChecked) {
-          selectedBookmarks.add(checkbox.dataset.id)
-        }
-      })
-      addToFolderButton.classList.toggle("hidden", selectedBookmarks.size === 0)
     })
 
     // Add event listeners for dropdown buttons
@@ -307,10 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
       sortType
     )
     folderListDiv.innerHTML = `
-      <div class="select-all">
-        <input type="checkbox" id="select-all">
-        <label for="select-all">Select All</label>
-      </div>
+      <div class="select-all"></div>
     `
     const topFolders = nodes.filter(
       (node) => node.children && ["1", "2"].includes(node.id)
@@ -338,9 +297,6 @@ document.addEventListener("DOMContentLoaded", () => {
           new URL(bookmark.url).hostname
         }`
         bookmarkDiv.innerHTML = `
-          <input type="checkbox" class="bookmark-checkbox" data-id="${
-            bookmark.id
-          }">
           <img src="${favicon}" alt="favicon" class="favicon">
           <a href="${bookmark.url}" target="_blank" class="link">${
           bookmark.title || bookmark.url
@@ -391,35 +347,6 @@ document.addEventListener("DOMContentLoaded", () => {
       div.appendChild(folderButton)
       div.appendChild(dropdown)
       folderListDiv.appendChild(div)
-    })
-
-    document.querySelectorAll(".bookmark-checkbox").forEach((checkbox) => {
-      checkbox.addEventListener("change", (e) => {
-        const bookmarkId = e.target.dataset.id
-        if (e.target.checked) {
-          selectedBookmarks.add(bookmarkId)
-        } else {
-          selectedBookmarks.delete(bookmarkId)
-        }
-        addToFolderButton.classList.toggle(
-          "hidden",
-          selectedBookmarks.size === 0
-        )
-        selectAllCheckbox.checked =
-          selectedBookmarks.size === sortedBookmarks.length
-      })
-    })
-
-    selectAllCheckbox.addEventListener("change", (e) => {
-      const allChecked = e.target.checked
-      selectedBookmarks.clear()
-      document.querySelectorAll(".bookmark-checkbox").forEach((checkbox) => {
-        checkbox.checked = allChecked
-        if (allChecked) {
-          selectedBookmarks.add(checkbox.dataset.id)
-        }
-      })
-      addToFolderButton.classList.toggle("hidden", selectedBookmarks.size === 0)
     })
 
     document.querySelectorAll(".dropdown-btn").forEach((button) => {
@@ -635,10 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderFilteredBookmarks(filtered, sortType) {
     const sortedBookmarks = sortBookmarks(filtered, sortType)
     folderListDiv.innerHTML = `
-      <div class="select-all">
-        <input type="checkbox" id="select-all">
-        <label for="select-all">Select All</label>
-      </div>
+      <div class="select-all"></div>
     `
     sortedBookmarks.forEach((bookmark) => {
       if (bookmark.url) {
@@ -648,9 +572,6 @@ document.addEventListener("DOMContentLoaded", () => {
           new URL(bookmark.url).hostname
         }`
         div.innerHTML = `
-          <input type="checkbox" class="bookmark-checkbox" data-id="${
-            bookmark.id
-          }">
           <img src="${favicon}" alt="favicon" class="favicon">
           <a href="${bookmark.url}" target="_blank" class="link">${
           bookmark.title || bookmark.url
