@@ -1,7 +1,7 @@
 # Bookmark Manager Extension
 
 <div align="center">
-<img src="./images/logo.png" alt="logo">
+<img src="./images/logo.png" alt="logo" width="full">
 </div>
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
