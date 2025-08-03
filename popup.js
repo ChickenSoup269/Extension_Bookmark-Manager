@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const addToFolderButton = document.getElementById("add-to-folder")
   const folderListDiv = document.getElementById("folder-list")
   const bookmarkCountDiv = document.getElementById("bookmark-count")
+
   let bookmarks = []
   let folders = []
   let selectedBookmarks = new Set()

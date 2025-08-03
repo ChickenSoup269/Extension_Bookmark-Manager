@@ -309,16 +309,16 @@ body.light-theme {
 
 .dropdown-btn {
   font-size: 0.875rem; /* text-sm */
-  color: black;
-  background-color: white; /* bg-gray-200 */
+  color: white;
+  background-color: transparent; /* bg-gray-200 */
   padding: 4px 8px; /* px-2 py-1 */
   border-radius: 6px; /* rounded */
   border: none;
   cursor: pointer;
 }
 .dropdown-btn:hover {
-  color: white;
-  background-color: #000000; /* hover:bg-gray-300 */
+  color: black;
+  background-color: white; /* hover:bg-gray-300 */
 }
 
 .dropdown-menu {
