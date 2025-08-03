@@ -11,9 +11,11 @@
 <body>
     <div class="container">
         <img src="./images/logo.png" alt="logo" class="logo">
-        <!-- <h1 class="title">Bookmark Manager</h1> -->
         <div class="controls">
-            <input type="text" id="search" placeholder="Search bookmarks..." class="input">
+            <div class="search-container">
+                <input type="text" id="search" placeholder="Search bookmarks..." class="input">
+                <button id="clear-search" class="button clear">✖</button>
+            </div>
             <select id="folder-filter" class="select">
                 <option value="">All Bookmarks</option>
             </select>
@@ -28,8 +30,8 @@
             <button id="create-folder" class="button create">Create Folder</button>
             <button id="add-to-folder" class="button add hidden">Add to Folder</button>
         </div>
-        <div id="bookmark-count" class="count"></div>
-        <div id="folder-list" class="folder-list ">
+        <div id="bookmark-count" class="count">Total Bookmarks: 0</div>
+        <div id="folder-list" class="folder-list">
             <div class="select-all">
                 <input type="checkbox" id="select-all">
                 <label for="select-all">Select All</label>
