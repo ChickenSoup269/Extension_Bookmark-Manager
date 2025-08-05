@@ -71,6 +71,8 @@ body {
 /* Container */
 .container {
   padding: var(--spacing-md);
+  max-height: 600px; /* Ensure container is scrollable */
+  overflow-y: auto;
 }
 
 /* Typography */
@@ -95,23 +97,34 @@ body {
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
   flex-wrap: wrap;
+  justify-content: center; /* Center controls without search */
 }
 
 .search-container {
   position: relative;
-  flex-grow: 1;
-  min-width: 200px;
+  min-width: 150px; /* Reduced from 200px */
+  width: 100%; /* Full width for sticky positioning */
+}
+
+.sticky-search {
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-primary);
+  z-index: 1000;
+  padding: var(--spacing-xs) 0;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-normal);
 }
 
 /* Form elements */
 .input {
   width: 100%;
-  padding: var(--spacing-sm) 2rem var(--spacing-sm) var(--spacing-sm);
+  padding: var(--spacing-xs) 1.5rem var(--spacing-xs) var(--spacing-sm); /* Reduced padding */
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   background-color: var(--bg-secondary);
   color: var(--text-primary);
-  font-size: 0.875rem;
+  font-size: 0.75rem; /* Reduced font size */
   transition: all var(--transition-fast);
   outline: none;
 }
@@ -198,6 +211,22 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+.button.toggle {
+  background-color: var(--accent-color);
+  color: var(--bg-primary);
+  padding: var(--spacing-sm);
+}
+
+.button.toggle:hover {
+  background-color: var(--text-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.button.toggle i {
+  font-size: 1rem;
+}
+
 .button.back {
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
@@ -218,7 +247,7 @@ body {
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.75rem; /* Reduced font size for clear button */
   padding: var(--spacing-xs);
   border-radius: var(--border-radius);
   transition: all var(--transition-fast);
@@ -250,6 +279,7 @@ body {
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   transition: background-color var(--transition-normal);
+  margin-top: var(--spacing-sm); /* Prevent overlap with sticky search */
 }
 
 .bookmark-item,
@@ -509,10 +539,12 @@ body {
 
   .controls {
     flex-direction: column;
+    align-items: center;
   }
 
   .search-container {
     min-width: auto;
+    width: 100%;
   }
 
   .logo {

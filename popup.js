@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sortFilter = document.getElementById("sort-filter")
   const createFolderButton = document.getElementById("create-folder")
   const addToFolderButton = document.getElementById("add-to-folder")
+  const toggleCheckboxesButton = document.getElementById("toggle-checkboxes")
   const folderListDiv = document.getElementById("folder-list")
   const bookmarkCountDiv = document.getElementById("bookmark-count")
 
@@ -12,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let folders = []
   let selectedBookmarks = new Set()
   let bookmarkTree = []
+  let checkboxesVisible = true
 
   // Store UI state
   let uiState = {
@@ -39,6 +41,26 @@ document.addEventListener("DOMContentLoaded", () => {
   window
     .matchMedia("(prefers-color-scheme: dark)")
     .addEventListener("change", updateTheme)
+
+  // Toggle checkboxes visibility
+  toggleCheckboxesButton.addEventListener("click", () => {
+    checkboxesVisible = !checkboxesVisible
+    toggleCheckboxesButton.textContent = checkboxesVisible
+      ? "Hide Checkboxes"
+      : "Show Checkboxes"
+    document
+      .querySelectorAll(".bookmark-checkbox, .select-all input")
+      .forEach((checkbox) => {
+        checkbox.style.display = checkboxesVisible ? "inline-block" : "none"
+      })
+    if (!checkboxesVisible) {
+      selectedBookmarks.clear()
+      addToFolderButton.classList.add("hidden")
+      document.querySelectorAll(".bookmark-checkbox").forEach((cb) => {
+        cb.checked = false
+      })
+    }
+  })
 
   // Fetch bookmarks from Chrome API
   chrome.bookmarks.getTree((bookmarkTreeNodes) => {
@@ -306,7 +328,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const sortedBookmarks = sortBookmarks(bookmarksList, uiState.sortType)
     folderListDiv.innerHTML = `
       <div class="select-all">
-        <input type="checkbox" id="select-all">
+        <input type="checkbox" id="select-all" style="display: ${
+          checkboxesVisible ? "inline-block" : "none"
+        }">
         <label for="select-all">Select All</label>
       </div>
     `
@@ -320,7 +344,9 @@ document.addEventListener("DOMContentLoaded", () => {
         div.innerHTML = `
           <input type="checkbox" class="bookmark-checkbox" data-id="${
             bookmark.id
-          }" ${selectedBookmarks.has(bookmark.id) ? "checked" : ""}>
+          }" ${
+          selectedBookmarks.has(bookmark.id) ? "checked" : ""
+        } style="display: ${checkboxesVisible ? "inline-block" : "none"}">
           <img src="${favicon}" alt="favicon" class="favicon">
           <a href="${bookmark.url}" target="_blank" class="link">${
           bookmark.title || bookmark.url
@@ -384,7 +410,9 @@ document.addEventListener("DOMContentLoaded", () => {
     )
     folderListDiv.innerHTML = `
       <div class="select-all">
-        <input type="checkbox" id="select-all">
+        <input type="checkbox" id="select-all" style="display: ${
+          checkboxesVisible ? "inline-block" : "none"
+        }">
         <label for="select-all">Select All</label>
       </div>
     `
@@ -416,7 +444,9 @@ document.addEventListener("DOMContentLoaded", () => {
         bookmarkDiv.innerHTML = `
           <input type="checkbox" class="bookmark-checkbox" data-id="${
             bookmark.id
-          }" ${selectedBookmarks.has(bookmark.id) ? "checked" : ""}>
+          }" ${
+          selectedBookmarks.has(bookmark.id) ? "checked" : ""
+        } style="display: ${checkboxesVisible ? "inline-block" : "none"}">
           <img src="${favicon}" alt="favicon" class="favicon">
           <a href="${bookmark.url}" target="_blank" class="link">${
           bookmark.title || bookmark.url
@@ -620,7 +650,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const sortedBookmarks = sortBookmarks(filtered, sortType)
     folderListDiv.innerHTML = `
       <div class="select-all">
-        <input type="checkbox" id="select-all">
+        <input type="checkbox" id="select-all" style="display: ${
+          checkboxesVisible ? "inline-block" : "none"
+        }">
         <label for="select-all">Select All</label>
       </div>
     `
@@ -634,7 +666,9 @@ document.addEventListener("DOMContentLoaded", () => {
         div.innerHTML = `
           <input type="checkbox" class="bookmark-checkbox" data-id="${
             bookmark.id
-          }" ${selectedBookmarks.has(bookmark.id) ? "checked" : ""}>
+          }" ${
+          selectedBookmarks.has(bookmark.id) ? "checked" : ""
+        } style="display: ${checkboxesVisible ? "inline-block" : "none"}">
           <img src="${favicon}" alt="favicon" class="favicon">
           <a href="${bookmark.url}" target="_blank" class="link">${
           bookmark.title || bookmark.url
