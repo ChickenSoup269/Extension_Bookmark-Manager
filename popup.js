@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let folders = []
   let selectedBookmarks = new Set()
   let bookmarkTree = []
-  let checkboxesVisible = true
+  let checkboxesVisible = false
 
   // Store UI state
   let uiState = {

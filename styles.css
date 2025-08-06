@@ -71,8 +71,6 @@ body {
 /* Container */
 .container {
   padding: var(--spacing-md);
-  max-height: 600px; /* Ensure container is scrollable */
-  overflow-y: auto;
 }
 
 /* Typography */
@@ -97,13 +95,12 @@ body {
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
   flex-wrap: wrap;
-  justify-content: center; /* Center controls without search */
 }
 
 .search-container {
   position: relative;
-  min-width: 150px; /* Reduced from 200px */
-  width: 100%; /* Full width for sticky positioning */
+  flex-grow: 1;
+  min-width: 150px;
 }
 
 .sticky-search {
@@ -119,7 +116,7 @@ body {
 /* Form elements */
 .input {
   width: 100%;
-  padding: var(--spacing-xs) 1.5rem var(--spacing-xs) var(--spacing-sm); /* Reduced padding */
+  padding: var(--spacing-xs) 2.1rem var(--spacing-xs) var(--spacing-sm); /* Reduced padding */
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   background-color: var(--bg-secondary);
@@ -279,7 +276,6 @@ body {
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   transition: background-color var(--transition-normal);
-  margin-top: var(--spacing-sm); /* Prevent overlap with sticky search */
 }
 
 .bookmark-item,
@@ -345,7 +341,6 @@ body {
 }
 
 .link:focus {
-  outline: 2px solid var(--focus-outline);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -358,9 +353,9 @@ body {
 .dropdown-btn {
   padding: var(--spacing-xs) var(--spacing-sm);
   font-size: 0.875rem;
-  background-color: var(--bg-tertiary);
+  background-color: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -383,7 +378,6 @@ body {
 .dropdown-menu {
   position: absolute;
   right: 0;
-  z-index: 1000;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
@@ -395,6 +389,7 @@ body {
   transform: translateY(-10px);
   transition: all var(--transition-fast);
   pointer-events: none;
+  z-index: 10;
 }
 
 .dropdown-menu:not(.hidden) {
@@ -539,12 +534,10 @@ body {
 
   .controls {
     flex-direction: column;
-    align-items: center;
   }
 
   .search-container {
     min-width: auto;
-    width: 100%;
   }
 
   .logo {
