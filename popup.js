@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleCheckboxesButton = document.getElementById("toggle-checkboxes")
   const folderListDiv = document.getElementById("folder-list")
   const bookmarkCountDiv = document.getElementById("bookmark-count")
+  const scrollToTopButton = document.getElementById("scroll-to-top")
+  const clearRenameButton = document.getElementById("clear-rename")
 
   let bookmarks = []
   let folders = []
@@ -62,6 +64,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
+  // Scroll to Top functionality
+  scrollToTopButton.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  })
+
+  // Show/hide scroll-to-top button based on scroll position
+  scrollToTopButton.classList.add("hidden")
+  window.addEventListener("scroll", () => {
+    scrollToTopButton.classList.toggle("hidden", window.scrollY <= 0)
+  })
+
   // Rename popup event listeners
   document.getElementById("rename-save").addEventListener("click", () => {
     const renameInput = document.getElementById("rename-input")
@@ -88,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("rename-cancel").addEventListener("click", () => {
     document.getElementById("rename-popup").classList.add("hidden")
     document.getElementById("rename-input").classList.remove("error")
+    document.getElementById("rename-input").value = ""
     currentBookmarkId = null
   })
 
@@ -107,6 +121,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === document.getElementById("rename-popup")) {
       document.getElementById("rename-cancel").click()
     }
+  })
+
+  // Clear rename input
+  clearRenameButton.addEventListener("click", () => {
+    const renameInput = document.getElementById("rename-input")
+    renameInput.value = ""
+    renameInput.classList.remove("error")
+    renameInput.placeholder = "Enter new name..."
+    renameInput.focus()
   })
 
   // Fetch bookmarks from Chrome API
@@ -230,6 +253,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const renamePopup = document.getElementById("rename-popup")
     const renameInput = document.getElementById("rename-input")
     renameInput.value = ""
+    renameInput.classList.remove("error")
+    renameInput.placeholder = "Enter new name..."
     renamePopup.classList.remove("hidden")
     renameInput.focus()
     chrome.bookmarks.get(currentBookmarkId, (bookmark) => {
