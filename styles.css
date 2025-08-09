@@ -105,8 +105,8 @@ body {
 
 .sticky-search {
   position: sticky;
-  top: 0;
-  background-color: var(--bg-primary);
+  top: -4px;
+  background-color: transparent;
   z-index: 1000;
   padding: var(--spacing-xs) 0;
   box-shadow: var(--shadow-sm);
@@ -116,12 +116,12 @@ body {
 /* Form elements */
 .input {
   width: 100%;
-  padding: var(--spacing-xs) 2.1rem var(--spacing-xs) var(--spacing-sm); /* Reduced padding */
+  padding: 0.8rem 2.1rem 0.8rem 0.8rem; /* Reduced padding */
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   background-color: var(--bg-secondary);
   color: var(--text-primary);
-  font-size: 0.75rem; /* Reduced font size */
+  font-size: 0.8rem; /* Reduced font size */
   transition: all var(--transition-fast);
   outline: none;
 }
@@ -285,7 +285,7 @@ body {
   align-items: center;
   border-bottom: 1px solid var(--border-color);
   transition: all var(--transition-fast);
-  border-radius: var(--border-radius);
+
   margin-bottom: 2px;
 }
 
@@ -571,4 +571,93 @@ body {
   .folder-item {
     break-inside: avoid;
   }
+}
+
+/* Rename Popup */
+.rename-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  transition: opacity var(--transition-normal);
+}
+
+.rename-popup.hidden {
+  display: none;
+  opacity: 0;
+}
+
+.rename-popup-content {
+  background-color: var(--text-primary);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+  width: 90%;
+  max-width: 400px; /* Increased from 300px for wider input */
+  text-align: center;
+}
+
+.rename-popup-content h3 {
+  margin: 0 0 var(--spacing-md);
+  font-size: 1.25rem;
+  color: var(--bg-primary);
+}
+
+#rename-input {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  overflow-x: auto;
+  white-space: normal;
+  word-wrap: break-word;
+  outline: none;
+}
+
+#rename-input:focus {
+  border-color: var(--focus-outline);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+#rename-input.error {
+  border-color: var(--danger-color);
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.rename-popup-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+  margin-top: var(--spacing-md);
+}
+
+.button.save {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.button.save:hover {
+  background-color: var(--text-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.button.cancel {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.button.cancel:hover {
+  background-color: var(--hover-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }

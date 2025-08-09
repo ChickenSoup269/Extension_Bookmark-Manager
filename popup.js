@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedBookmarks = new Set()
   let bookmarkTree = []
   let checkboxesVisible = false
+  let currentBookmarkId = null // For rename popup
 
   // Store UI state
   let uiState = {
@@ -31,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
     folderListDiv.classList.toggle("dark-theme", isDarkMode)
     bookmarkCountDiv.classList.toggle("light-theme", !isDarkMode)
     bookmarkCountDiv.classList.toggle("dark-theme", isDarkMode)
-    // Apply theme to input and select elements
     document.querySelectorAll(".input, .select, .button").forEach((el) => {
       el.classList.toggle("light-theme", !isDarkMode)
       el.classList.toggle("dark-theme", isDarkMode)
@@ -59,6 +59,53 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".bookmark-checkbox").forEach((cb) => {
         cb.checked = false
       })
+    }
+  })
+
+  // Rename popup event listeners
+  document.getElementById("rename-save").addEventListener("click", () => {
+    const renameInput = document.getElementById("rename-input")
+    const newTitle = renameInput.value.trim()
+    if (newTitle && currentBookmarkId) {
+      chrome.bookmarks.update(currentBookmarkId, { title: newTitle }, () => {
+        chrome.bookmarks.getTree((bookmarkTreeNodes) => {
+          bookmarkTree = bookmarkTreeNodes
+          bookmarks = flattenBookmarks(bookmarkTreeNodes)
+          folders = getFolders(bookmarkTreeNodes)
+          populateFolderFilter(folders)
+          updateBookmarkCount()
+          renderAllBookmarks(bookmarks)
+        })
+        document.getElementById("rename-popup").classList.add("hidden")
+        currentBookmarkId = null
+      })
+    } else if (!newTitle) {
+      renameInput.classList.add("error")
+      renameInput.placeholder = "Title cannot be empty"
+    }
+  })
+
+  document.getElementById("rename-cancel").addEventListener("click", () => {
+    document.getElementById("rename-popup").classList.add("hidden")
+    document.getElementById("rename-input").classList.remove("error")
+    currentBookmarkId = null
+  })
+
+  document.getElementById("rename-input").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      document.getElementById("rename-save").click()
+    }
+  })
+
+  document.getElementById("rename-input").addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      document.getElementById("rename-cancel").click()
+    }
+  })
+
+  document.getElementById("rename-popup").addEventListener("click", (e) => {
+    if (e.target === document.getElementById("rename-popup")) {
+      document.getElementById("rename-cancel").click()
     }
   })
 
@@ -177,6 +224,21 @@ document.addEventListener("DOMContentLoaded", () => {
     return sorted
   }
 
+  // Handle rename bookmark
+  function handleRenameBookmark(e) {
+    currentBookmarkId = e.target.dataset.id
+    const renamePopup = document.getElementById("rename-popup")
+    const renameInput = document.getElementById("rename-input")
+    renameInput.value = ""
+    renamePopup.classList.remove("hidden")
+    renameInput.focus()
+    chrome.bookmarks.get(currentBookmarkId, (bookmark) => {
+      if (bookmark && bookmark[0]) {
+        renameInput.value = bookmark[0].title || ""
+      }
+    })
+  }
+
   // Attach event listeners to dropdown buttons
   function attachDropdownListeners() {
     document.querySelectorAll(".dropdown-btn").forEach((button) => {
@@ -291,23 +353,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    function handleRenameBookmark(e) {
-      const bookmarkId = e.target.dataset.id
-      const newTitle = prompt("Enter new title:")
-      if (newTitle) {
-        chrome.bookmarks.update(bookmarkId, { title: newTitle }, () => {
-          chrome.bookmarks.getTree((bookmarkTreeNodes) => {
-            bookmarkTree = bookmarkTreeNodes
-            bookmarks = flattenBookmarks(bookmarkTreeNodes)
-            folders = getFolders(bookmarkTreeNodes)
-            populateFolderFilter(folders)
-            updateBookmarkCount()
-            renderAllBookmarks(bookmarks)
-          })
-        })
-      }
-    }
-
     function handleBookmarkCheckbox(e) {
       const bookmarkId = e.target.dataset.id
       if (e.target.checked) {
@@ -317,6 +362,39 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       addToFolderButton.classList.toggle("hidden", selectedBookmarks.size === 0)
     }
+  }
+
+  // Create bookmark element
+  function createBookmarkElement(bookmark) {
+    const item = document.createElement("div")
+    item.className = "bookmark-item"
+    const favicon = `https://www.google.com/s2/favicons?sz=32&domain=${
+      new URL(bookmark.url).hostname
+    }`
+    item.innerHTML = `
+      <input type="checkbox" class="bookmark-checkbox" data-id="${
+        bookmark.id
+      }" style="display: ${checkboxesVisible ? "inline-block" : "none"}">
+      <img src="${favicon}" alt="favicon" class="favicon">
+      <a href="${bookmark.url}" target="_blank" class="link">${
+      bookmark.title || bookmark.url
+    }</a>
+      <div class="dropdown-btn-group">
+        <button class="dropdown-btn" data-id="${bookmark.id}">⋮</button>
+        <div class="dropdown-menu hidden">
+          <button class="menu-item add-to-folder" data-id="${
+            bookmark.id
+          }">Add to Folder</button>
+          <button class="menu-item delete-btn" data-id="${
+            bookmark.id
+          }">Delete</button>
+          <button class="menu-item rename-btn" data-id="${
+            bookmark.id
+          }">Rename</button>
+        </div>
+      </div>
+    `
+    return item
   }
 
   // Render all bookmarks

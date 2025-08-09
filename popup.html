@@ -26,7 +26,8 @@
             </select>
             <button id="create-folder" class="button create">Create Folder</button>
             <button id="add-to-folder" class="button add hidden">Add to Folder</button>
-            <button id="toggle-checkboxes" class="button toggle">Show checkboxes</button>
+
+            <button id="toggle-checkboxes" class="button toggle"><i class="fas fa-pencil-alt"></i></button>
         </div>
         <div id="bookmark-count" class="count">Total Bookmarks: 0</div>
         <div class="search-container sticky-search">
@@ -37,6 +38,16 @@
             <div class="select-all">
                 <input type="checkbox" id="select-all">
                 <label for="select-all">Select All</label>
+            </div>
+        </div>
+        <div id="rename-popup" class="rename-popup hidden">
+            <div class="rename-popup-content">
+                <h3>Rename</h3>
+                <input type="text" id="rename-input" class="input" placeholder="Enter new name...">
+                <div class="rename-popup-buttons">
+                    <button id="rename-save" class="button save">Save</button>
+                    <button id="rename-cancel" class="button cancel">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
