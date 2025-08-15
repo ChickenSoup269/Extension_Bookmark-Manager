@@ -36,7 +36,7 @@
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Light theme variables - supports both data-attribute and class */
+/* Light theme variables */
 [data-theme="light"],
 body.light-theme {
   --bg-primary: #ffffff;
@@ -71,6 +71,8 @@ body {
 /* Container */
 .container {
   padding: var(--spacing-md);
+  max-width: 360px;
+  margin: 0 auto;
 }
 
 /* Typography */
@@ -83,17 +85,22 @@ body {
 }
 
 .count {
-  font-size: 0.9rem;
+  margin: 0 auto;
   text-align: center;
+  font-size: 0.9rem;
+  margin-top: 10px;
   margin-bottom: var(--spacing-sm);
   color: var(--text-secondary);
+  width: 150px;
 }
 
 /* Layout */
 .controls {
   display: flex;
   gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(
+    --spacing-xs
+  ); /* Giảm margin-bottom để #bookmark-count gần hơn */
   flex-wrap: wrap;
 }
 
@@ -208,6 +215,33 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+/* -- hide/show -- */
+.button.add.hidden {
+  display: none; /* Ẩn hoàn toàn để không chiếm không gian */
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+}
+
+.button.delete-folder {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+/* -- hide/show -- */
+.button.delete-folder.hidden {
+  display: none; /* Ẩn hoàn toàn để không chiếm không gian */
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+}
+
+.button.delete-folder:hover {
+  background-color: var(--danger-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
 .button.toggle {
   background-color: var(--accent-color);
   color: var(--bg-primary);
@@ -255,15 +289,24 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.button.delete-folder {
-  background-color: var(--danger-color);
-  color: white;
-  margin-left: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-sm);
+.button.save {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
-.button.delete-folder:hover {
-  background-color: var(--danger-hover);
+.button.save:hover {
+  background-color: var(--text-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.button.cancel {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.button.cancel:hover {
+  background-color: var(--hover-bg);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
@@ -428,14 +471,20 @@ body {
 .select-all label {
   display: flex;
   align-items: center;
+  font-size: 1em;
   gap: var(--spacing-sm);
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 400;
   transition: color var(--transition-fast);
 }
 
 .select-all label:hover {
   color: var(--text-secondary);
+}
+
+#toggle-checkboxes {
+  font-size: 1em;
+  width: auto;
 }
 
 /* Logo */
@@ -657,63 +706,6 @@ body {
   margin-top: var(--spacing-md);
 }
 
-.button.save {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-.button.save:hover {
-  background-color: var(--text-secondary);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.button.cancel {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.button.cancel:hover {
-  background-color: var(--hover-bg);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Scroll to Top Button */
-.scroll-to-top {
-  position: fixed;
-  bottom: var(--spacing-md);
-  right: var(--spacing-md);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: var(--accent-color);
-  color: var(--bg-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  box-shadow: var(--shadow-md);
-  transition: transform var(--transition-fast),
-    background-color var(--transition-fast);
-}
-
-.scroll-to-top:hover {
-  transform: translateY(-2px);
-  background-color: var(--text-secondary);
-  box-shadow: var(--shadow-lg);
-}
-
-.scroll-to-top:focus {
-  outline: 2px solid var(--focus-outline);
-  outline-offset: 2px;
-}
-
-.folder-list {
-  max-height: 5000px; /* Adjust based on your popup size */
-  overflow-y: auto;
-}
-
 /* Scroll to Top Button */
 .scroll-to-top {
   position: fixed;
@@ -744,4 +736,13 @@ body {
   transform: translateY(-2px);
   background-color: var(--text-secondary);
   box-shadow: var(--shadow-lg);
+}
+
+.bottom-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm);
+  box-shadow: var(--shadow-sm);
+  width: 100%;
 }

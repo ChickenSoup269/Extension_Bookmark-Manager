@@ -4,6 +4,8 @@
 <img src="./images/logo.png" alt="logo" width="full">
 </div>
 
+English | <a href="https://github.com/ChickenSoup269/Bookmark-Manager/blob/main/README_VN.md">Tiếng Việt</a>
+
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
 ## Introduction

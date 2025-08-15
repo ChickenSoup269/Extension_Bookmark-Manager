@@ -26,19 +26,21 @@
             </select>
             <button id="create-folder" class="button create">Create Folder</button>
             <button id="add-to-folder" class="button add hidden">Add to Folder</button>
-            <button id="toggle-checkboxes" class="button toggle"><i class="fas fa-pencil-alt"></i></button>
+            <button id="delete-folder" class="button delete-folder hidden">Delete Folder</button>
         </div>
         <div id="bookmark-count" class="count">Total Bookmarks: 0</div>
-        <div class="search-container sticky-search">
-            <input type="text" id="search" placeholder="Search bookmarks..." class="input">
-            <button id="clear-search" class="button clear">✖</button>
-        </div>
-        <div id="folder-list" class="folder-list">
+        <div class="bottom-controls">
             <div class="select-all">
                 <input type="checkbox" id="select-all">
                 <label for="select-all">Select All</label>
             </div>
+            <button id="toggle-checkboxes" class="button toggle small">Show Checkboxes</button>
         </div>
+        <div class="search-container sticky-search">
+            <input type="text" id="search" placeholder="Search bookmarks..." class="input">
+            <button id="clear-search" class="button clear">✖</button>
+        </div>
+        <div id="folder-list" class="folder-list"></div>
         <div id="rename-popup" class="rename-popup hidden" role="dialog" aria-labelledby="rename-title">
             <div class="rename-popup-content">
                 <h3 id="rename-title">Rename</h3>
@@ -50,6 +52,25 @@
                 <div class="rename-popup-buttons">
                     <button id="rename-save" class="button save">Save</button>
                     <button id="rename-cancel" class="button cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+        <div id="add-to-folder-popup" class="rename-popup hidden" role="dialog" aria-labelledby="add-to-folder-title">
+            <div class="rename-popup-content">
+                <h3 id="add-to-folder-title">Add to Folder</h3>
+                <div class="add-to-folder-container">
+                    <select id="add-to-folder-select" class="select" aria-label="Select folder">
+                        <option value="">Select Folder</option>
+                    </select>
+                    <div class="new-folder-container" style="margin-top: var(--spacing-sm);">
+                        <input type="text" id="new-folder-input" class="input" placeholder="Or enter new folder name..."
+                            aria-label="New folder name">
+                        <button id="create-new-folder" class="button create small">Create</button>
+                    </div>
+                </div>
+                <div class="rename-popup-buttons">
+                    <button id="add-to-folder-save" class="button save">Save</button>
+                    <button id="add-to-folder-cancel" class="button cancel">Cancel</button>
                 </div>
             </div>
         </div>

@@ -5,27 +5,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const sortFilter = document.getElementById("sort-filter")
   const createFolderButton = document.getElementById("create-folder")
   const addToFolderButton = document.getElementById("add-to-folder")
+  const deleteFolderButton = document.getElementById("delete-folder")
   const toggleCheckboxesButton = document.getElementById("toggle-checkboxes")
   const folderListDiv = document.getElementById("folder-list")
   const bookmarkCountDiv = document.getElementById("bookmark-count")
   const scrollToTopButton = document.getElementById("scroll-to-top")
   const clearRenameButton = document.getElementById("clear-rename")
+  const addToFolderPopup = document.getElementById("add-to-folder-popup")
+  const addToFolderSelect = document.getElementById("add-to-folder-select")
+  const newFolderInput = document.getElementById("new-folder-input")
+  const createNewFolderButton = document.getElementById("create-new-folder")
+  const addToFolderSaveButton = document.getElementById("add-to-folder-save")
+  const addToFolderCancelButton = document.getElementById(
+    "add-to-folder-cancel"
+  )
 
   let bookmarks = []
   let folders = []
   let selectedBookmarks = new Set()
   let bookmarkTree = []
   let checkboxesVisible = false
-  let currentBookmarkId = null // For rename popup
+  let currentBookmarkId = null
 
-  // Store UI state
   let uiState = {
     searchQuery: "",
     selectedFolderId: "",
     sortType: "default",
   }
 
-  // Detect and apply system theme
   function updateTheme() {
     const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
     document.body.classList.toggle("light-theme", !isDarkMode)
@@ -44,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
     .matchMedia("(prefers-color-scheme: dark)")
     .addEventListener("change", updateTheme)
 
-  // Toggle checkboxes visibility
   toggleCheckboxesButton.addEventListener("click", () => {
     checkboxesVisible = !checkboxesVisible
     toggleCheckboxesButton.textContent = checkboxesVisible
@@ -64,18 +70,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Scroll to Top functionality
   scrollToTopButton.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" })
   })
 
-  // Show/hide scroll-to-top button based on scroll position
   scrollToTopButton.classList.add("hidden")
   window.addEventListener("scroll", () => {
     scrollToTopButton.classList.toggle("hidden", window.scrollY <= 0)
   })
 
-  // Rename popup event listeners
   document.getElementById("rename-save").addEventListener("click", () => {
     const renameInput = document.getElementById("rename-input")
     const newTitle = renameInput.value.trim()
@@ -123,7 +126,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Clear rename input
   clearRenameButton.addEventListener("click", () => {
     const renameInput = document.getElementById("rename-input")
     renameInput.value = ""
@@ -132,7 +134,201 @@ document.addEventListener("DOMContentLoaded", () => {
     renameInput.focus()
   })
 
-  // Fetch bookmarks from Chrome API
+  function toggleDeleteFolderButton() {
+    deleteFolderButton.classList.toggle(
+      "hidden",
+      !uiState.selectedFolderId ||
+        uiState.selectedFolderId === "1" ||
+        uiState.selectedFolderId === "2"
+    )
+  }
+
+  // Cập nhật logic xóa folder
+  deleteFolderButton.addEventListener("click", () => {
+    if (
+      uiState.selectedFolderId &&
+      uiState.selectedFolderId !== "1" &&
+      uiState.selectedFolderId !== "2"
+    ) {
+      if (
+        confirm(
+          "Are you sure you want to delete this folder? Bookmarks that exist in other folders will be preserved."
+        )
+      ) {
+        chrome.bookmarks.getSubTree(uiState.selectedFolderId, (subTree) => {
+          if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError)
+            return
+          }
+
+          const folderNode = subTree[0]
+          const bookmarksToCheck = folderNode.children
+            ? folderNode.children.filter((node) => node.url)
+            : []
+
+          // Lấy danh sách tất cả bookmark trong cây
+          chrome.bookmarks.getTree((bookmarkTreeNodes) => {
+            const allBookmarks = flattenBookmarks(bookmarkTreeNodes)
+
+            // Kiểm tra từng bookmark trong folder
+            const bookmarksToDelete = []
+            bookmarksToCheck.forEach((bookmark) => {
+              // Tìm các bookmark có URL trùng lặp ở folder khác
+              const duplicates = allBookmarks.filter(
+                (b) =>
+                  b.url === bookmark.url &&
+                  b.id !== bookmark.id &&
+                  b.parentId !== uiState.selectedFolderId
+              )
+
+              if (duplicates.length === 0) {
+                // Nếu không có bản sao ở folder khác, đánh dấu để xóa
+                bookmarksToDelete.push(bookmark.id)
+              }
+            })
+
+            // Xóa từng bookmark không có bản sao
+            let deletePromises = bookmarksToDelete.map((bookmarkId) => {
+              return new Promise((resolve) => {
+                chrome.bookmarks.remove(bookmarkId, () => {
+                  if (chrome.runtime.lastError) {
+                    console.error(chrome.runtime.lastError)
+                  }
+                  resolve()
+                })
+              })
+            })
+
+            // Sau khi xóa các bookmark, xóa folder
+            Promise.all(deletePromises).then(() => {
+              chrome.bookmarks.remove(uiState.selectedFolderId, () => {
+                if (!chrome.runtime.lastError) {
+                  uiState.selectedFolderId = ""
+                  folderFilter.value = ""
+                  chrome.bookmarks.getTree((bookmarkTreeNodes) => {
+                    bookmarkTree = bookmarkTreeNodes
+                    bookmarks = flattenBookmarks(bookmarkTreeNodes)
+                    folders = getFolders(bookmarkTreeNodes)
+                    populateFolderFilter(folders)
+                    updateBookmarkCount()
+                    renderAllBookmarks(bookmarks)
+                    toggleDeleteFolderButton()
+                  })
+                }
+              })
+            })
+          })
+        })
+      }
+    }
+  })
+
+  function populateAddToFolderSelect() {
+    addToFolderSelect.innerHTML = '<option value="">Select Folder</option>'
+    folders.forEach((folder) => {
+      const option = document.createElement("option")
+      option.value = folder.id
+      option.textContent = folder.title
+      addToFolderSelect.appendChild(option)
+    })
+  }
+
+  addToFolderButton.addEventListener("click", () => {
+    if (selectedBookmarks.size > 0) {
+      populateAddToFolderSelect()
+      newFolderInput.value = ""
+      newFolderInput.classList.remove("error")
+      addToFolderPopup.classList.remove("hidden")
+      addToFolderSelect.focus()
+    }
+  })
+
+  addToFolderSaveButton.addEventListener("click", () => {
+    const targetFolderId = addToFolderSelect.value
+    if (targetFolderId) {
+      selectedBookmarks.forEach((bookmarkId) => {
+        chrome.bookmarks.move(bookmarkId, { parentId: targetFolderId }, () => {
+          chrome.bookmarks.getTree((bookmarkTreeNodes) => {
+            bookmarkTree = bookmarkTreeNodes
+            bookmarks = flattenBookmarks(bookmarkTreeNodes)
+            folders = getFolders(bookmarkTreeNodes)
+            populateFolderFilter(folders)
+            updateBookmarkCount()
+            renderAllBookmarks(bookmarks)
+            selectedBookmarks.clear()
+            addToFolderButton.classList.add("hidden")
+            toggleDeleteFolderButton()
+          })
+        })
+      })
+      addToFolderPopup.classList.add("hidden")
+    } else {
+      newFolderInput.classList.add("error")
+      newFolderInput.placeholder = "Select a folder or create a new one"
+    }
+  })
+
+  createNewFolderButton.addEventListener("click", () => {
+    const folderName = newFolderInput.value.trim()
+    if (folderName) {
+      chrome.bookmarks.create(
+        { parentId: "2", title: folderName },
+        (newFolder) => {
+          chrome.bookmarks.getTree((bookmarkTreeNodes) => {
+            bookmarkTree = bookmarkTreeNodes
+            bookmarks = flattenBookmarks(bookmarkTreeNodes)
+            folders = getFolders(bookmarkTreeNodes)
+            populateFolderFilter(folders)
+            populateAddToFolderSelect()
+            newFolderInput.value = ""
+            newFolderInput.classList.remove("error")
+            addToFolderSelect.value = newFolder.id
+          })
+        }
+      )
+    } else {
+      newFolderInput.classList.add("error")
+      newFolderInput.placeholder = "Folder name cannot be empty"
+    }
+  })
+
+  addToFolderCancelButton.addEventListener("click", () => {
+    addToFolderPopup.classList.add("hidden")
+    newFolderInput.value = ""
+    newFolderInput.classList.remove("error")
+    newFolderInput.placeholder = "Or enter new folder name..."
+  })
+
+  addToFolderPopup.addEventListener("click", (e) => {
+    if (e.target === addToFolderPopup) {
+      addToFolderCancelButton.click()
+    }
+  })
+
+  newFolderInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      createNewFolderButton.click()
+    }
+  })
+
+  newFolderInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      addToFolderCancelButton.click()
+    }
+  })
+
+  addToFolderSelect.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      addToFolderSaveButton.click()
+    }
+  })
+
+  addToFolderSelect.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      addToFolderCancelButton.click()
+    }
+  })
+
   chrome.bookmarks.getTree((bookmarkTreeNodes) => {
     bookmarkTree = bookmarkTreeNodes
     bookmarks = flattenBookmarks(bookmarkTreeNodes)
@@ -140,9 +336,9 @@ document.addEventListener("DOMContentLoaded", () => {
     populateFolderFilter(folders)
     updateBookmarkCount()
     renderAllBookmarks(bookmarks)
+    toggleDeleteFolderButton()
   })
 
-  // Flatten bookmarks for search
   function flattenBookmarks(nodes) {
     let flat = []
     nodes.forEach((node) => {
@@ -156,7 +352,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return flat
   }
 
-  // Get all folders
   function getFolders(nodes) {
     let folderList = []
     nodes.forEach((node) => {
@@ -168,7 +363,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return folderList
   }
 
-  // Populate folder dropdown
   function populateFolderFilter(folders) {
     folderFilter.innerHTML = '<option value="">All Bookmarks</option>'
     folders.forEach((folder) => {
@@ -180,7 +374,6 @@ document.addEventListener("DOMContentLoaded", () => {
     folderFilter.value = uiState.selectedFolderId
   }
 
-  // Update bookmark count based on selected folder
   function updateBookmarkCount() {
     const selectedFolderId = folderFilter.value
     let count
@@ -194,7 +387,6 @@ document.addEventListener("DOMContentLoaded", () => {
     bookmarkCountDiv.textContent = `Total Bookmarks: ${count}`
   }
 
-  // Find parent folder for a bookmark
   function findParentFolder(bookmarkId, nodes) {
     for (const node of nodes) {
       if (node.children) {
@@ -208,7 +400,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return null
   }
 
-  // Sort bookmarks
   function sortBookmarks(bookmarksList, sortType) {
     let sorted = [...bookmarksList]
     switch (sortType) {
@@ -247,7 +438,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return sorted
   }
 
-  // Handle rename bookmark
   function handleRenameBookmark(e) {
     currentBookmarkId = e.target.dataset.id
     const renamePopup = document.getElementById("rename-popup")
@@ -264,7 +454,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Attach event listeners to dropdown buttons
   function attachDropdownListeners() {
     document.querySelectorAll(".dropdown-btn").forEach((button) => {
       button.removeEventListener("click", handleDropdownClick)
@@ -300,66 +489,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function handleAddToFolder(e) {
       const bookmarkId = e.target.dataset.id
-      const folderSelectDiv = document.createElement("div")
-      folderSelectDiv.className = "relative dropdown-btn-group"
-      folderSelectDiv.innerHTML = `
-        <select class="select small">
-          <option value="">Select Folder</option>
-          ${folders
-            .map((f) => `<option value="${f.id}">${f.title}</option>`)
-            .join("")}
-        </select>
-        <button class="button back">←</button>
-      `
-      const folderSelect = folderSelectDiv.querySelector(".select")
-      const backButton = folderSelectDiv.querySelector(".back")
-
-      folderSelect.addEventListener("change", (e) => {
-        if (e.target.value) {
-          chrome.bookmarks.move(
-            bookmarkId,
-            { parentId: e.target.value },
-            () => {
-              chrome.bookmarks.getTree((bookmarkTreeNodes) => {
-                bookmarkTree = bookmarkTreeNodes
-                bookmarks = flattenBookmarks(bookmarkTreeNodes)
-                folders = getFolders(bookmarkTreeNodes)
-                populateFolderFilter(folders)
-                updateBookmarkCount()
-                renderAllBookmarks(bookmarks)
-                const parentDiv = folderSelectDiv
-                parentDiv.innerHTML = `
-                <button class="dropdown-btn">⋮</button>
-                <div class="dropdown-menu hidden">
-                  <button class="menu-item add-to-folder" data-id="${bookmarkId}">Add to Folder</button>
-                  <button class="menu-item delete-btn" data-id="${bookmarkId}">Delete</button>
-                  <button class="menu-item rename-btn" data-id="${bookmarkId}">Rename</button>
-                </div>
-              `
-                attachDropdownListeners()
-              })
-            }
-          )
-        }
-      })
-
-      backButton.addEventListener("click", () => {
-        const parentDiv = folderSelectDiv
-        parentDiv.innerHTML = `
-          <button class="dropdown-btn">⋮</button>
-          <div class="dropdown-menu hidden">
-            <button class="menu-item add-to-folder" data-id="${bookmarkId}">Add to Folder</button>
-            <button class="menu-item delete-btn" data-id="${bookmarkId}">Delete</button>
-            <button class="menu-item rename-btn" data-id="${bookmarkId}">Rename</button>
-          </div>
-        `
-        attachDropdownListeners()
-      })
-
-      const parentDiv = e.target.closest(".dropdown-btn-group")
-      if (parentDiv) {
-        parentDiv.replaceWith(folderSelectDiv)
-      }
+      selectedBookmarks.clear()
+      selectedBookmarks.add(bookmarkId)
+      addToFolderButton.click()
     }
 
     function handleDeleteBookmark(e) {
@@ -389,7 +521,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Create bookmark element
   function createBookmarkElement(bookmark) {
     const item = document.createElement("div")
     item.className = "bookmark-item"
@@ -422,21 +553,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return item
   }
 
-  // Render all bookmarks
   function renderAllBookmarks(bookmarksList) {
     uiState.sortType = sortFilter.value || "default"
     uiState.searchQuery = searchInput.value.toLowerCase()
     uiState.selectedFolderId = folderFilter.value
 
     const sortedBookmarks = sortBookmarks(bookmarksList, uiState.sortType)
-    folderListDiv.innerHTML = `
-      <div class="select-all">
-        <input type="checkbox" id="select-all" style="display: ${
-          checkboxesVisible ? "inline-block" : "none"
-        }">
-        <label for="select-all">Select All</label>
-      </div>
-    `
+
     sortedBookmarks.forEach((bookmark) => {
       if (bookmark.url) {
         const div = document.createElement("div")
@@ -482,6 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
     selectAllCheckbox.addEventListener("change", handleSelectAll)
 
     attachDropdownListeners()
+    toggleDeleteFolderButton()
 
     function handleSelectAll(e) {
       const checkboxes = document.querySelectorAll(".bookmark-checkbox")
@@ -501,7 +625,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Render folder list with dropdown
   function renderFolderList(nodes) {
     uiState.sortType = sortFilter.value || "default"
     uiState.searchQuery = searchInput.value.toLowerCase()
@@ -613,6 +736,7 @@ document.addEventListener("DOMContentLoaded", () => {
     selectAllCheckbox.addEventListener("change", handleSelectAll)
 
     attachDropdownListeners()
+    toggleDeleteFolderButton()
 
     function handleSelectAll(e) {
       const checkboxes = document.querySelectorAll(".bookmark-checkbox")
@@ -632,7 +756,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Search functionality
   searchInput.addEventListener("input", (e) => {
     uiState.searchQuery = e.target.value.toLowerCase()
     uiState.selectedFolderId = folderFilter.value
@@ -652,9 +775,9 @@ document.addEventListener("DOMContentLoaded", () => {
       )
     }
     renderFilteredBookmarks(filtered, uiState.sortType)
+    toggleDeleteFolderButton()
   })
 
-  // Clear search input
   if (clearSearchButton) {
     clearSearchButton.addEventListener("click", () => {
       searchInput.value = ""
@@ -666,10 +789,10 @@ document.addEventListener("DOMContentLoaded", () => {
         )
       }
       renderFilteredBookmarks(filtered, uiState.sortType)
+      toggleDeleteFolderButton()
     })
   }
 
-  // Folder filter functionality
   folderFilter.addEventListener("change", () => {
     uiState.searchQuery = searchInput.value.toLowerCase()
     uiState.selectedFolderId = folderFilter.value
@@ -692,9 +815,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     renderFilteredBookmarks(filtered, uiState.sortType)
     updateBookmarkCount()
+    toggleDeleteFolderButton()
   })
 
-  // Sort filter functionality
   sortFilter.addEventListener("change", () => {
     uiState.searchQuery = searchInput.value.toLowerCase()
     uiState.selectedFolderId = folderFilter.value
@@ -719,9 +842,9 @@ document.addEventListener("DOMContentLoaded", () => {
       renderAllBookmarks(bookmarks)
     }
     updateBookmarkCount()
+    toggleDeleteFolderButton()
   })
 
-  // Create new folder
   createFolderButton.addEventListener("click", () => {
     const folderName = prompt("Enter folder name:")
     if (folderName) {
@@ -733,12 +856,12 @@ document.addEventListener("DOMContentLoaded", () => {
           populateFolderFilter(folders)
           updateBookmarkCount()
           renderAllBookmarks(bookmarks)
+          toggleDeleteFolderButton()
         })
       })
     }
   })
 
-  // Check if bookmark is in folder
   function isInFolder(bookmark, folderId) {
     let node = bookmark
     while (node.parentId) {
@@ -748,7 +871,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return false
   }
 
-  // Render filtered bookmarks
   function renderFilteredBookmarks(filtered, sortType) {
     const sortedBookmarks = sortBookmarks(filtered, sortType)
     folderListDiv.innerHTML = `
@@ -804,6 +926,7 @@ document.addEventListener("DOMContentLoaded", () => {
     selectAllCheckbox.addEventListener("change", handleSelectAll)
 
     attachDropdownListeners()
+    toggleDeleteFolderButton()
 
     function handleSelectAll(e) {
       const checkboxes = document.querySelectorAll(".bookmark-checkbox")
@@ -822,33 +945,4 @@ document.addEventListener("DOMContentLoaded", () => {
       addToFolderButton.classList.toggle("hidden", selectedBookmarks.size === 0)
     }
   }
-
-  // Add to folder for selected bookmarks
-  addToFolderButton.addEventListener("click", () => {
-    if (selectedBookmarks.size > 0) {
-      const targetFolderId = prompt(
-        "Enter folder ID to move selected bookmarks:"
-      )
-      if (targetFolderId && folders.some((f) => f.id === targetFolderId)) {
-        selectedBookmarks.forEach((bookmarkId) => {
-          chrome.bookmarks.move(
-            bookmarkId,
-            { parentId: targetFolderId },
-            () => {
-              chrome.bookmarks.getTree((bookmarkTreeNodes) => {
-                bookmarkTree = bookmarkTreeNodes
-                bookmarks = flattenBookmarks(bookmarkTreeNodes)
-                folders = getFolders(bookmarkTreeNodes)
-                populateFolderFilter(folders)
-                updateBookmarkCount()
-                renderAllBookmarks(bookmarks)
-                selectedBookmarks.clear()
-                addToFolderButton.classList.add("hidden")
-              })
-            }
-          )
-        })
-      }
-    }
-  })
 })
