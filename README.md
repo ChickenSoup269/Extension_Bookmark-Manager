@@ -57,8 +57,3 @@ Install Bookmark-Manager
 ## Feedback
 
 If you have any feedback, please reach out to us at thientran01345@icloud.com
-
----
-
-Thank you for using our extension!
-Last updated: 08:58 PM +07, Friday, 01/08/2025

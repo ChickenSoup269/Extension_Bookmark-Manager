@@ -57,8 +57,3 @@ Cài đặt Bookmark-Manager
 ## Feedback
 
 Nếu bạn có bất kỳ phản hồi nào, vui lòng liên hệ với chúng tôi tại thientran01345@icloud.com.
-
----
-
-Cảm ơn bạn đã sử dụng extension của chúng tôi!
-Ngày cập nhật cuối: 08:58 PM +07, Thứ Sáu, 01/08/2025
