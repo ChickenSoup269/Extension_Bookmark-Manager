@@ -3,7 +3,7 @@
   "name": "Bookmark Manager",
   "version": "1.0",
   "description": "A user-friendly Chrome bookmark manager with search functionality",
-  "permissions": ["bookmarks"],
+  "permissions": ["bookmarks", "storage"],
   "action": {
     "default_popup": "popup.html"
   },
