@@ -3,11 +3,17 @@
   "name": "Bookmark Manager",
   "version": "1.0",
   "description": "A user-friendly Chrome bookmark manager with search functionality",
-  "permissions": ["bookmarks", "storage"],
+  "permissions": ["bookmarks", "storage", "identity"],
   "action": {
     "default_popup": "popup.html"
   },
   "icons": {
     "128": "icons/icon.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["fonts/*.ttf", "fonts/*.woff2", "images/*.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

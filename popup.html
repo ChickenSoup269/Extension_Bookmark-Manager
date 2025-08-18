@@ -27,6 +27,13 @@
             <button id="create-folder" class="button create">Create Folder</button>
             <button id="add-to-folder" class="button add hidden">Add to Folder</button>
             <button id="delete-folder" class="button delete-folder hidden">Delete Folder</button>
+            <div class="settings-container">
+                <button id="settings-button" class="button settings" title="button setting">⋮</button>
+                <div id="settings-menu" class="dropdown-menu hidden">
+                    <button id="export-bookmarks-option" class="menu-item">Export Bookmarks</button>
+                    <button id="change-font-option" class="menu-item">Change Font</button>
+                </div>
+            </div>
         </div>
         <div id="bookmark-count" class="count">Total Bookmarks: 0</div>
         <div class="bottom-controls">
@@ -74,6 +81,7 @@
                 </div>
             </div>
         </div>
+
         <button id="scroll-to-top" class="button scroll-to-top" title="Scroll to Top" aria-label="Scroll to Top">
             <i class="fas fa-caret-up"></i>
         </button>

@@ -19,6 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const addToFolderCancelButton = document.getElementById(
     "add-to-folder-cancel"
   )
+  const settingsButton = document.getElementById("settings-button")
+  const settingsMenu = document.getElementById("settings-menu")
+  const exportBookmarksOption = document.getElementById(
+    "export-bookmarks-option"
+  )
 
   let bookmarks = []
   let folders = []
@@ -209,6 +214,49 @@ document.addEventListener("DOMContentLoaded", () => {
     renameInput.classList.remove("error")
     renameInput.placeholder = "Enter new name..."
     renameInput.focus()
+  })
+
+  // Settings menu toggle
+  settingsButton.addEventListener("click", (e) => {
+    e.stopPropagation()
+    settingsMenu.classList.toggle("hidden")
+  })
+
+  // Close settings menu when clicking outside
+  document.addEventListener("click", (e) => {
+    if (
+      !e.target.closest("#settings-button") &&
+      !e.target.closest("#settings-menu")
+    ) {
+      settingsMenu.classList.add("hidden")
+    }
+  })
+
+  // Export bookmarks functionality
+  exportBookmarksOption.addEventListener("click", () => {
+    safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
+      if (bookmarkTreeNodes) {
+        const exportData = {
+          timestamp: new Date().toISOString(),
+          bookmarks: bookmarkTreeNodes,
+        }
+        const jsonString = JSON.stringify(exportData, null, 2)
+        const blob = new Blob([jsonString], { type: "application/json" })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.download = `bookmarks_${
+          new Date().toISOString().split("T")[0]
+        }.json`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+        settingsMenu.classList.add("hidden")
+      } else {
+        alert("Failed to export bookmarks. Please try again.")
+      }
+    })
   })
 
   function toggleDeleteFolderButton() {
@@ -532,7 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
         break
       case "last-opened":
         sorted.sort((a, b) => {
-          const parentA = findParentFolder(a.id, bookmarkTree) || {}
+          const parentA = findParentFolder(a.id, bookmarkodrama) || {}
           const parentB = findParentFolder(b.id, bookmarkTree) || {}
           const dateA = parentA.dateGroupModified || a.dateAdded || 0
           const dateB = parentB.dateGroupModified || b.dateAdded || 0
@@ -598,35 +646,34 @@ document.addEventListener("DOMContentLoaded", () => {
       checkbox.addEventListener("change", handleBookmarkCheckbox)
     })
 
-    // Remove existing document click listener to avoid duplicates
     document.removeEventListener("click", handleDocumentClick)
     document.addEventListener("click", handleDocumentClick)
 
     function handleDropdownClick(e) {
-      e.stopPropagation() // Prevent click from bubbling to document
+      e.stopPropagation()
       const menu = e.target.nextElementSibling
       const isMenuOpen = menu && !menu.classList.contains("hidden")
 
-      // Close all dropdown menus
       document.querySelectorAll(".dropdown-menu").forEach((m) => {
         m.classList.add("hidden")
       })
 
-      // If the menu was closed, open it; if it was open, it stays closed
       if (menu && !isMenuOpen) {
         menu.classList.remove("hidden")
       }
     }
 
     function handleDocumentClick(e) {
-      // Close all dropdown menus if clicking outside a dropdown button or menu
       if (
         !e.target.closest(".dropdown-btn") &&
-        !e.target.closest(".dropdown-menu")
+        !e.target.closest(".dropdown-menu") &&
+        !e.target.closest("#settings-button") &&
+        !e.target.closest("#settings-menu")
       ) {
         document.querySelectorAll(".dropdown-menu").forEach((menu) => {
           menu.classList.add("hidden")
         })
+        settingsMenu.classList.add("hidden")
       }
     }
 
@@ -876,7 +923,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveUIState()
 
     function handleSelectAll(e) {
-      const checkboxes = document.querySelectorAll(".bookmark-checkbox")
+      const Icheckboxes = document.querySelectorAll(".bookmark-checkbox")
       if (e.target.checked) {
         checkboxes.forEach((cb) => {
           const bookmarkId = cb.dataset.id
@@ -1080,5 +1127,32 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       addToFolderButton.classList.toggle("hidden", selectedBookmarks.size === 0)
     }
+  }
+})
+
+document.addEventListener("DOMContentLoaded", () => {
+  const settingsMenu = document.getElementById("settings-menu")
+
+  // Thêm chọn font vào menu settings
+  const fontOption = document.createElement("select")
+  fontOption.id = "font-switcher"
+  fontOption.innerHTML = `
+    <option value="gohu">GohuFont</option>
+    <option value="normal">Normal</option>
+  `
+  settingsMenu.appendChild(fontOption)
+
+  // Khi đổi font
+  fontOption.addEventListener("change", (e) => {
+    document.body.classList.remove("font-gohu", "font-normal")
+    document.body.classList.add(`font-${e.target.value}`)
+    localStorage.setItem("appFont", e.target.value) // Lưu vào localStorage
+  })
+
+  // Load font đã lưu
+  const savedFont = localStorage.getItem("appFont")
+  if (savedFont) {
+    document.body.classList.add(`font-${savedFont}`)
+    fontOption.value = savedFont
   }
 })
