@@ -54,6 +54,13 @@ Install Bookmark-Manager
 | `Sort`             | Choose a sorting option.                       |
 | `Manage bookmarks` | Click "⋮" to add to folder, rename, or delete. |
 
+## Video & screenshots
+
+<p align="center"> <img src="./images/Screenshot.png" alt="Screenshot" width="220"/> </p>
+<p align="center"> <img src="./images/Screenshot2.png" alt="Screenshot" width="220"/> </p>
+<p align="center"> <img src="./images/Screenshot3.png" alt="Screenshot" width="220"/> </p>
+<p align="center"> <img src="./images/Screenshot4.png" alt="Screenshot" width="220"/> </p>
+
 ## Feedback
 
 If you have any feedback, please reach out to us at thientran01345@icloud.com

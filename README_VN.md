@@ -54,6 +54,16 @@ Cài đặt Bookmark-Manager
 | `Sắp xếp`          | Chọn tùy chọn sắp xếp.                          |
 | `Quản lý bookmark` | Nhấn "⋮" để thêm vào thư mục, đổi tên hoặc xóa. |
 
+## Video & screenshots
+
+<p align="center"> <img src="./images/Screenshot.png" alt="Screenshot" width="220"/> </p>
+
+<p align="center"> <img src="./images/Screenshot2.png" alt="Screenshot" width="220"/> </p>
+
+<p align="center"> <img src="./images/Screenshot3.png" alt="Screenshot" width="220"/> </p>
+
+<p align="center"> <img src="./images/Screenshot4.png" alt="Screenshot" width="220"/> </p>
+
 ## Feedback
 
 Nếu bạn có bất kỳ phản hồi nào, vui lòng liên hệ với chúng tôi tại thientran01345@icloud.com.
