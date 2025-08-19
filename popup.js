@@ -367,27 +367,31 @@ document.addEventListener("DOMContentLoaded", () => {
   addToFolderSaveButton.addEventListener("click", () => {
     const targetFolderId = addToFolderSelect.value
     if (targetFolderId) {
-      selectedBookmarks.forEach((bookmarkId) => {
-        safeChromeBookmarksCall(
-          "move",
-          [bookmarkId, { parentId: targetFolderId }],
-          () => {
-            safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
-              if (bookmarkTreeNodes) {
-                bookmarkTree = bookmarkTreeNodes
-                bookmarks = flattenBookmarks(bookmarkTreeNodes)
-                folders = getFolders(bookmarkTreeNodes)
-                populateFolderFilter(folders)
-                updateBookmarkCount()
-                renderFolderList(bookmarkTree)
-                selectedBookmarks.clear()
-                addToFolderButton.classList.add("hidden")
-                toggleDeleteFolderButton()
-                saveUIState()
-              }
-            })
+      const movePromises = Array.from(selectedBookmarks).map((bookmarkId) => {
+        return new Promise((resolve) => {
+          safeChromeBookmarksCall(
+            "move",
+            [bookmarkId, { parentId: targetFolderId }],
+            resolve
+          )
+        })
+      })
+
+      Promise.all(movePromises).then(() => {
+        safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
+          if (bookmarkTreeNodes) {
+            bookmarkTree = bookmarkTreeNodes
+            bookmarks = flattenBookmarks(bookmarkTreeNodes)
+            folders = getFolders(bookmarkTreeNodes)
+            populateFolderFilter(folders)
+            updateBookmarkCount()
+            renderFolderList(bookmarkTree) // Refreshes the UI after all moves
+            selectedBookmarks.clear()
+            addToFolderButton.classList.add("hidden")
+            toggleDeleteFolderButton()
+            saveUIState()
           }
-        )
+        })
       })
       addToFolderPopup.classList.add("hidden")
     } else {
@@ -411,6 +415,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 folders = getFolders(bookmarkTreeNodes)
                 populateFolderFilter(folders)
                 populateAddToFolderSelect()
+                renderFolderList(bookmarkTree) // Added: Refresh UI immediately after create
                 newFolderInput.value = ""
                 newFolderInput.classList.remove("error")
                 addToFolderSelect.value = newFolder.id
@@ -427,12 +432,21 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   addToFolderCancelButton.addEventListener("click", () => {
-    addToFolderPopup.classList.add("hidden")
-    newFolderInput.value = ""
-    newFolderInput.classList.remove("error")
-    newFolderInput.placeholder = "Or enter new folder name..."
+    const folderName = newFolderInput.value.trim()
+    if (folderName && !folders.some((f) => f.title === folderName)) {
+      if (confirm("You entered a folder name but didn't save. Discard it?")) {
+        addToFolderPopup.classList.add("hidden")
+        newFolderInput.value = ""
+        newFolderInput.classList.remove("error")
+        newFolderInput.placeholder = "Or enter new folder name..."
+      }
+    } else {
+      addToFolderPopup.classList.add("hidden")
+      newFolderInput.value = ""
+      newFolderInput.classList.remove("error")
+      newFolderInput.placeholder = "Or enter new folder name..."
+    }
   })
-
   addToFolderPopup.addEventListener("click", (e) => {
     if (e.target === addToFolderPopup) {
       addToFolderCancelButton.click()
@@ -441,7 +455,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   newFolderInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
-      createNewFolderButton.click()
+      const folderName = newFolderInput.value.trim()
+      if (folderName) {
+        safeChromeBookmarksCall(
+          "create",
+          [{ parentId: "2", title: folderName }],
+          (newFolder) => {
+            if (newFolder) {
+              safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
+                if (bookmarkTreeNodes) {
+                  bookmarkTree = bookmarkTreeNodes
+                  bookmarks = flattenBookmarks(bookmarkTreeNodes)
+                  folders = getFolders(bookmarkTreeNodes)
+                  populateFolderFilter(folders)
+                  populateAddToFolderSelect()
+                  renderFolderList(bookmarkTree) // Làm mới giao diện
+                  newFolderInput.value = ""
+                  newFolderInput.classList.remove("error")
+                  addToFolderSelect.value = newFolder.id
+                  saveUIState()
+                }
+              })
+            }
+          }
+        )
+      } else {
+        newFolderInput.classList.add("error")
+        newFolderInput.placeholder = "Folder name cannot be empty"
+      }
     }
   })
 
@@ -580,7 +621,7 @@ document.addEventListener("DOMContentLoaded", () => {
         break
       case "last-opened":
         sorted.sort((a, b) => {
-          const parentA = findParentFolder(a.id, bookmarkodrama) || {}
+          const parentA = findParentFolder(a.id, bookmarkTree) || {} // Fixed typo: was 'bookmarkodrama'
           const parentB = findParentFolder(b.id, bookmarkTree) || {}
           const dateA = parentA.dateGroupModified || a.dateAdded || 0
           const dateB = parentB.dateGroupModified || b.dateAdded || 0
@@ -752,12 +793,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const fragment = document.createDocumentFragment()
     const selectAllDiv = document.createElement("div")
     selectAllDiv.className = "select-all"
-    selectAllDiv.innerHTML = `
-      <input type="checkbox" id="select-all" style="display: ${
-        checkboxesVisible ? "inline-block" : "none"
-      }">
-      <label for="select-all">Select All</label>
-    `
+
     fragment.appendChild(selectAllDiv)
 
     uiState.sortType = sortFilter.value || "default"
@@ -1081,12 +1117,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const fragment = document.createDocumentFragment()
     const selectAllDiv = document.createElement("div")
     selectAllDiv.className = "select-all"
-    selectAllDiv.innerHTML = `
-      <input type="checkbox" id="select-all" style="display: ${
-        checkboxesVisible ? "inline-block" : "none"
-      }">
-      <label for="select-all">Select All</label>
-    `
+
     fragment.appendChild(selectAllDiv)
 
     const sortedBookmarks = sortBookmarks(filtered, sortType)
