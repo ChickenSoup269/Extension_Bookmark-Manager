@@ -58,11 +58,12 @@ Cài đặt Bookmark-Manager
 
 <p align="center"> <img src="./images/Screenshot.png" alt="Screenshot" width="220"/> </p>
 
-<p align="center"> <img src="./images/Screenshot2.png" alt="Screenshot" width="220"/> </p>
-
-<p align="center"> <img src="./images/Screenshot3.png" alt="Screenshot" width="220"/> </p>
-
-<p align="center"> <img src="./images/Screenshot4.png" alt="Screenshot" width="220"/> </p>
+<div style="text-align: center;">
+  <img src="./images/Screenshot.png" alt="Screenshot" width="220"/>
+  <img src="./images/Screenshot2.png" alt="Screenshot" width="220"/>
+  <img src="./images/Screenshot3.png" alt="Screenshot" width="220"/>
+  <img src="./images/Screenshot4.png" alt="Screenshot" width="220"/>
+</div>
 
 ## Feedback
 
