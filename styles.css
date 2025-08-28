@@ -166,6 +166,7 @@ body {
   cursor: pointer;
   transition: all var(--transition-fast);
   outline: none;
+
   min-width: 120px;
 }
 
@@ -464,7 +465,6 @@ body {
   font-size: 0.875rem;
   border-radius: var(--border-radius);
   transition: all var(--transition-fast);
-  margin-bottom: 5px;
 }
 
 .menu-item:hover {
@@ -782,6 +782,10 @@ body {
   background-color: #70a146;
 }
 
-#font-switcher {
-  margin-top: 5px;
+#theme-switcher {
+  margin: 4px 0px 4px 0px;
+}
+
+#export-bookmarks-option {
+  margin-top: 2px;
 }

@@ -1,3 +1,109 @@
+const translations = {
+  en: {
+    allBookmarks: "All Bookmarks",
+    sortDefault: "Sort: Default",
+    sortNew: "New to Old",
+    sortOld: "Old to New",
+    sortLastOpened: "By Last Opened",
+    sortAZ: "A to Z",
+    sortZA: "Z to A",
+    createFolder: "Create Folder",
+    addToFolder: "Add to Folder",
+    deleteFolder: "Delete Folder",
+    settings: "Settings",
+    exportBookmarks: "Export Bookmarks",
+    importBookmarks: "Import Bookmarks",
+    selectAll: "Select All",
+    showCheckboxes: "Show Checkboxes",
+    hideCheckboxes: "Hide Checkboxes",
+    searchPlaceholder: "Search bookmarks...",
+    renameTitle: "Rename",
+    renamePlaceholder: "Enter new name...",
+    addToFolderTitle: "Add to Folder",
+    selectFolder: "Select Folder",
+    newFolderPlaceholder: "Name folder want to add",
+    createNewFolder: "Create",
+    save: "Save",
+    cancel: "Cancel",
+    totalBookmarks: "Total Bookmarks",
+    scrollToTop: "Scroll to Top",
+    clear: "Clear",
+    deleteConfirm: "Are you sure you want to delete this bookmark?",
+    deleteFolderConfirm:
+      "Are you sure you want to delete this folder? Bookmarks that exist in other folders will be preserved.",
+    discardFolderPrompt:
+      "You entered a folder name but didn't save. Discard it?",
+    noBookmarks: "No bookmarks found. Please check permissions.",
+    emptyTitleError: "Title cannot be empty",
+    emptyFolderError: "Folder name cannot be empty",
+    selectFolderError: "Select a folder or create a new one",
+    errorUnexpected: "Unexpected error occurred. Please try again.",
+    clearRenameAria: "Clear rename input",
+    clearSearchAria: "Clear search input",
+    settingsButtonAria: "Open settings menu",
+    addToFolderOption: "Add to Folder",
+    deleteBookmarkOption: "Delete",
+    renameBookmarkOption: "Rename",
+    importSuccess: "Bookmarks imported successfully!",
+    importDuplicatePrompt:
+      "Some bookmarks already exist (same URL). Do you want to import the non-duplicate bookmarks?",
+    importInvalidFile:
+      "Invalid file format. Please select a valid JSON bookmark file.",
+    importError: "Failed to import bookmarks. Please try again.",
+  },
+  vi: {
+    allBookmarks: "Tất cả Dấu trang",
+    sortDefault: "Sắp xếp: Mặc định",
+    sortNew: "Mới đến Cũ",
+    sortOld: "Cũ đến Mới",
+    sortLastOpened: "Theo Lần Mở Cuối",
+    sortAZ: "A đến Z",
+    sortZA: "Z đến A",
+    createFolder: "Tạo Thư mục",
+    addToFolder: "Thêm vào Thư mục",
+    deleteFolder: "Xóa Thư mục",
+    settings: "Cài đặt",
+    exportBookmarks: "Xuất Dấu trang",
+    importBookmarks: "Nhập Dấu trang",
+    selectAll: "Chọn Tất cả",
+    showCheckboxes: "Hiển thị Hộp kiểm",
+    hideCheckboxes: "Ẩn Hộp kiểm",
+    searchPlaceholder: "Tìm kiếm dấu trang...",
+    renameTitle: "Đổi tên",
+    renamePlaceholder: "Nhập tên mới...",
+    addToFolderTitle: "Thêm vào Thư mục",
+    selectFolder: "Chọn Thư mục",
+    newFolderPlaceholder: "Nhập tên thư mục muốn thêm",
+    createNewFolder: "Tạo",
+    save: "Lưu",
+    cancel: "Hủy",
+    totalBookmarks: "Tổng số Dấu trang",
+    scrollToTop: "Cuộn lên Đầu",
+    clear: "Xóa",
+    deleteConfirm: "Bạn có chắc chắn muốn xóa dấu trang này không?",
+    deleteFolderConfirm:
+      "Bạn có chắc chắn muốn xóa thư mục này không? Các dấu trang có trong thư mục khác sẽ được giữ lại.",
+    discardFolderPrompt: "Bạn đã nhập tên thư mục nhưng chưa lưu. Hủy bỏ nó?",
+    noBookmarks: "Không tìm thấy dấu trang. Vui lòng kiểm tra quyền truy cập.",
+    emptyTitleError: "Tiêu đề không được để trống",
+    emptyFolderError: "Tên thư mục không được để trống",
+    selectFolderError: "Chọn một thư mục hoặc tạo mới",
+    errorUnexpected: "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.",
+    clearRenameAria: "Xóa nội dung nhập đổi tên",
+    clearSearchAria: "Xóa nội dung tìm kiếm",
+    settingsButtonAria: "Mở menu cài đặt",
+    addToFolderOption: "Thêm vào Thư mục",
+    deleteBookmarkOption: "Xóa",
+    renameBookmarkOption: "Đổi tên",
+    importSuccess: "Dấu trang đã được nhập thành công!",
+    importDuplicatePrompt:
+      "Một số dấu trang đã tồn tại (cùng URL). Bạn có muốn nhập các dấu trang không trùng lặp không?",
+    importInvalidFile:
+      "Định dạng tệp không hợp lệ. Vui lòng chọn tệp JSON dấu trang hợp lệ.",
+    importError: "Không thể nhập dấu trang. Vui lòng thử lại.",
+  },
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("search")
   const clearSearchButton = document.getElementById("clear-search")
@@ -24,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const exportBookmarksOption = document.getElementById(
     "export-bookmarks-option"
   )
+  const languageSwitcher = document.getElementById("language-switcher")
 
   let bookmarks = []
   let folders = []
@@ -36,6 +143,87 @@ document.addEventListener("DOMContentLoaded", () => {
     searchQuery: "",
     selectedFolderId: "",
     sortType: "default",
+  }
+
+  // Thêm tùy chọn import vào menu settings
+  const importBookmarksOption = document.createElement("button")
+  importBookmarksOption.id = "import-bookmarks-option"
+  importBookmarksOption.className = "menu-item"
+  importBookmarksOption.textContent =
+    translations[localStorage.getItem("appLanguage") || "en"].importBookmarks
+  settingsMenu.appendChild(importBookmarksOption)
+
+  // Hàm cập nhật giao diện ngôn ngữ
+  function updateUILanguage(language) {
+    const t = translations[language] || translations.en
+
+    document
+      .getElementById("folder-filter")
+      .querySelector('option[value=""]').textContent = t.allBookmarks
+    document.getElementById("sort-filter").innerHTML = `
+      <option value="default">${t.sortDefault}</option>
+      <option value="new">${t.sortNew}</option>
+      <option value="old">${t.sortOld}</option>
+      <option value="last-opened">${t.sortLastOpened}</option>
+      <option value="a-z">${t.sortAZ}</option>
+      <option value="z-a">${t.sortZA}</option>
+    `
+    document.getElementById("create-folder").textContent = t.createFolder
+    document.getElementById("add-to-folder").textContent = t.addToFolder
+    document.getElementById("delete-folder").textContent = t.deleteFolder
+    document.getElementById("export-bookmarks-option").textContent =
+      t.exportBookmarks
+    document.getElementById("import-bookmarks-option").textContent =
+      t.importBookmarks
+    document.querySelector('label[for="select-all"]').textContent = t.selectAll
+    document.getElementById("toggle-checkboxes").textContent = checkboxesVisible
+      ? t.hideCheckboxes
+      : t.showCheckboxes
+    document.getElementById("search").placeholder = t.searchPlaceholder
+    document.getElementById("rename-title").textContent = t.renameTitle
+    document.getElementById("rename-input").placeholder = t.renamePlaceholder
+    document.getElementById("add-to-folder-title").textContent =
+      t.addToFolderTitle
+    document
+      .getElementById("add-to-folder-select")
+      .querySelector('option[value=""]').textContent = t.selectFolder
+    document.getElementById("new-folder-input").placeholder =
+      t.newFolderPlaceholder
+    document.getElementById("create-new-folder").textContent = t.createNewFolder
+    document.getElementById("add-to-folder-save").textContent = t.save
+    document.getElementById("add-to-folder-cancel").textContent = t.cancel
+    document.getElementById("rename-save").textContent = t.save
+    document.getElementById("rename-cancel").textContent = t.cancel
+    document.getElementById("bookmark-count").textContent = `${
+      t.totalBookmarks
+    }: ${
+      document
+        .getElementById("bookmark-count")
+        .textContent.match(/\d+$/)?.[0] || 0
+    }`
+    document.getElementById("scroll-to-top").title = t.scrollToTop
+    document
+      .getElementById("scroll-to-top")
+      .setAttribute("aria-label", t.scrollToTop)
+    document
+      .getElementById("clear-rename")
+      .setAttribute("aria-label", t.clearRenameAria)
+    document
+      .getElementById("clear-search")
+      .setAttribute("aria-label", t.clearSearchAria)
+    document
+      .getElementById("settings-button")
+      .setAttribute("aria-label", t.settingsButtonAria)
+
+    document.getElementById("rename-input").dataset.errorPlaceholder =
+      t.emptyTitleError
+    document.getElementById("new-folder-input").dataset.errorPlaceholder =
+      t.emptyFolderError
+    document.getElementById("new-folder-input").dataset.selectFolderError =
+      t.selectFolderError
+
+    localStorage.setItem("appLanguage", language)
+    renderFilteredBookmarks(bookmarks, uiState.sortType)
   }
 
   // Hàm lưu trạng thái
@@ -69,6 +257,9 @@ document.addEventListener("DOMContentLoaded", () => {
         uiState.sortType = data.uiState.sortType || "default"
       }
       checkboxesVisible = data.checkboxesVisible || false
+      const savedLanguage = localStorage.getItem("appLanguage") || "en"
+      languageSwitcher.value = savedLanguage
+      updateUILanguage(savedLanguage)
       applyUIState()
       callback()
     })
@@ -77,9 +268,10 @@ document.addEventListener("DOMContentLoaded", () => {
       searchInput.value = uiState.searchQuery
       folderFilter.value = uiState.selectedFolderId
       sortFilter.value = uiState.sortType
+      const language = localStorage.getItem("appLanguage") || "en"
       toggleCheckboxesButton.textContent = checkboxesVisible
-        ? "Hide Checkboxes"
-        : "Show Checkboxes"
+        ? translations[language].hideCheckboxes
+        : translations[language].showCheckboxes
       document
         .querySelectorAll(".bookmark-checkbox, .select-all input")
         .forEach((checkbox) => {
@@ -94,6 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
       chrome.bookmarks[method](...args, (result) => {
         if (chrome.runtime.lastError) {
           console.error(`Error in ${method}:`, chrome.runtime.lastError)
+          const language = localStorage.getItem("appLanguage") || "en"
           alert(`Error: ${chrome.runtime.lastError.message}`)
           callback(null)
           return
@@ -102,7 +295,8 @@ document.addEventListener("DOMContentLoaded", () => {
       })
     } catch (error) {
       console.error(`Error in ${method}:`, error)
-      alert(`Unexpected error occurred. Please try again.`)
+      const language = localStorage.getItem("appLanguage") || "en"
+      alert(translations[language].errorUnexpected)
       callback(null)
     }
   }
@@ -136,40 +330,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
 
-  // Thêm dropdown chọn theme vào menu settings
-  const themeOption = document.createElement("select")
-  themeOption.id = "theme-switcher"
-  themeOption.className = "select"
-  themeOption.innerHTML = `
-    <option value="system">Theme: System</option>
-    <option value="light">Theme: Light</option>
-    <option value="dark">Theme: Dark</option>
-  `
-  settingsMenu.appendChild(themeOption)
-
   // Xử lý thay đổi theme
-  themeOption.addEventListener("change", (e) => {
+  document.getElementById("theme-switcher").addEventListener("change", (e) => {
     localStorage.setItem("appTheme", e.target.value)
     updateTheme()
   })
 
   // Load theme đã lưu
   const savedTheme = localStorage.getItem("appTheme") || "system"
-  themeOption.value = savedTheme
+  document.getElementById("theme-switcher").value = savedTheme
   updateTheme()
 
-  // Thêm chọn font vào menu settings
-  const fontOption = document.createElement("select")
-  fontOption.id = "font-switcher"
-  fontOption.className = "select"
-  fontOption.innerHTML = `
-    <option value="gohu">Font: GohuFont</option>
-    <option value="normal">Font: Normal</option>
-  `
-  settingsMenu.appendChild(fontOption)
-
   // Xử lý thay đổi font
-  fontOption.addEventListener("change", (e) => {
+  document.getElementById("font-switcher").addEventListener("change", (e) => {
     document.body.classList.remove("font-gohu", "font-normal")
     document.body.classList.add(`font-${e.target.value}`)
     localStorage.setItem("appFont", e.target.value)
@@ -178,13 +351,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Load font đã lưu
   const savedFont = localStorage.getItem("appFont") || "normal"
   document.body.classList.add(`font-${savedFont}`)
-  fontOption.value = savedFont
+  document.getElementById("font-switcher").value = savedFont
+
+  // Xử lý đổi ngôn ngữ
+  languageSwitcher.addEventListener("change", (e) => {
+    updateUILanguage(e.target.value)
+  })
 
   toggleCheckboxesButton.addEventListener("click", () => {
     checkboxesVisible = !checkboxesVisible
+    const language = localStorage.getItem("appLanguage") || "en"
     toggleCheckboxesButton.textContent = checkboxesVisible
-      ? "Hide Checkboxes"
-      : "Show Checkboxes"
+      ? translations[language].hideCheckboxes
+      : translations[language].showCheckboxes
     document
       .querySelectorAll(".bookmark-checkbox, .select-all input")
       .forEach((checkbox) => {
@@ -212,6 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("rename-save").addEventListener("click", () => {
     const renameInput = document.getElementById("rename-input")
     const newTitle = renameInput.value.trim()
+    const language = localStorage.getItem("appLanguage") || "en"
     if (newTitle && currentBookmarkId) {
       safeChromeBookmarksCall(
         "update",
@@ -224,7 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
               folders = getFolders(bookmarkTreeNodes)
               populateFolderFilter(folders)
               updateBookmarkCount()
-              // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
               let filtered = bookmarks
               if (uiState.selectedFolderId) {
                 filtered = filtered.filter((bookmark) =>
@@ -251,7 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
       )
     } else if (!newTitle) {
       renameInput.classList.add("error")
-      renameInput.placeholder = "Title cannot be empty"
+      renameInput.placeholder = translations[language].emptyTitleError
     }
   })
 
@@ -284,18 +463,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const renameInput = document.getElementById("rename-input")
     renameInput.value = ""
     renameInput.classList.remove("error")
-    renameInput.placeholder = "Enter new name..."
+    const language = localStorage.getItem("appLanguage") || "en"
+    renameInput.placeholder = translations[language].renamePlaceholder
     renameInput.focus()
   })
 
-  // Settings menu toggle
   settingsButton.addEventListener("click", (e) => {
-    console.log("Settings button clicked")
     e.stopPropagation()
     settingsMenu.classList.toggle("hidden")
   })
 
-  // Close settings menu when clicking outside
   document.addEventListener("click", (e) => {
     if (
       !e.target.closest("#settings-button") &&
@@ -305,7 +482,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Export bookmarks functionality
   exportBookmarksOption.addEventListener("click", () => {
     safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
       if (bookmarkTreeNodes) {
@@ -327,10 +503,126 @@ document.addEventListener("DOMContentLoaded", () => {
         URL.revokeObjectURL(url)
         settingsMenu.classList.add("hidden")
       } else {
-        alert("Failed to export bookmarks. Please try again.")
+        const language = localStorage.getItem("appLanguage") || "en"
+        alert(translations[language].errorUnexpected)
       }
     })
   })
+
+  // Xử lý import bookmarks
+  importBookmarksOption.addEventListener("click", () => {
+    const input = document.createElement("input")
+    input.type = "file"
+    input.accept = "application/json"
+    input.addEventListener("change", (e) => {
+      const file = e.target.files[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target.result)
+          if (!data.bookmarks || !Array.isArray(data.bookmarks)) {
+            const language = localStorage.getItem("appLanguage") || "en"
+            alert(translations[language].importInvalidFile)
+            return
+          }
+
+          // Lấy danh sách bookmark hiện tại
+          safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
+            if (!bookmarkTreeNodes) {
+              const language = localStorage.getItem("appLanguage") || "en"
+              alert(translations[language].importError)
+              return
+            }
+
+            const existingBookmarks = flattenBookmarks(bookmarkTreeNodes)
+            const existingUrls = new Set(existingBookmarks.map((b) => b.url))
+
+            // Kiểm tra bookmark trùng lặp
+            const bookmarksToImport = []
+            const duplicateBookmarks = []
+            const flattenImportedBookmarks = flattenBookmarks(data.bookmarks)
+            flattenImportedBookmarks.forEach((bookmark) => {
+              if (bookmark.url) {
+                if (existingUrls.has(bookmark.url)) {
+                  duplicateBookmarks.push(bookmark)
+                } else {
+                  bookmarksToImport.push(bookmark)
+                }
+              }
+            })
+
+            if (duplicateBookmarks.length > 0) {
+              const language = localStorage.getItem("appLanguage") || "en"
+              if (confirm(translations[language].importDuplicatePrompt)) {
+                importNonDuplicateBookmarks(bookmarksToImport)
+              }
+            } else {
+              importNonDuplicateBookmarks(bookmarksToImport)
+            }
+          })
+        } catch (error) {
+          console.error("Error parsing import file:", error)
+          const language = localStorage.getItem("appLanguage") || "en"
+          alert(translations[language].importInvalidFile)
+        }
+      }
+      reader.readAsText(file)
+    })
+    input.click()
+    settingsMenu.classList.add("hidden")
+  })
+
+  // Hàm nhập các bookmark không trùng lặp
+  function importNonDuplicateBookmarks(bookmarksToImport) {
+    const language = localStorage.getItem("appLanguage") || "en"
+    const importPromises = bookmarksToImport.map((bookmark) => {
+      return new Promise((resolve) => {
+        safeChromeBookmarksCall(
+          "create",
+          [
+            {
+              parentId: bookmark.parentId || "2", // Thư mục "Other Bookmarks" mặc định
+              title: bookmark.title || "",
+              url: bookmark.url,
+            },
+          ],
+          resolve
+        )
+      })
+    })
+
+    Promise.all(importPromises).then(() => {
+      safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
+        if (bookmarkTreeNodes) {
+          bookmarkTree = bookmarkTreeNodes
+          bookmarks = flattenBookmarks(bookmarkTreeNodes)
+          folders = getFolders(bookmarkTreeNodes)
+          populateFolderFilter(folders)
+          updateBookmarkCount()
+          let filtered = bookmarks
+          if (uiState.selectedFolderId) {
+            filtered = filtered.filter((bookmark) =>
+              isInFolder(bookmark, uiState.selectedFolderId)
+            )
+          }
+          if (uiState.searchQuery) {
+            filtered = filtered.filter(
+              (bookmark) =>
+                bookmark.title?.toLowerCase().includes(uiState.searchQuery) ||
+                bookmark.url?.toLowerCase().includes(uiState.searchQuery)
+            )
+          }
+          renderFilteredBookmarks(filtered, uiState.sortType)
+          toggleDeleteFolderButton()
+          saveUIState()
+          alert(translations[language].importSuccess)
+        } else {
+          alert(translations[language].importError)
+        }
+      })
+    })
+  }
 
   function toggleDeleteFolderButton() {
     deleteFolderButton.classList.toggle(
@@ -347,11 +639,8 @@ document.addEventListener("DOMContentLoaded", () => {
       uiState.selectedFolderId !== "1" &&
       uiState.selectedFolderId !== "2"
     ) {
-      if (
-        confirm(
-          "Are you sure you want to delete this folder? Bookmarks that exist in other folders will be preserved."
-        )
-      ) {
+      const language = localStorage.getItem("appLanguage") || "en"
+      if (confirm(translations[language].deleteFolderConfirm)) {
         safeChromeBookmarksCall(
           "getSubTree",
           [uiState.selectedFolderId],
@@ -401,7 +690,6 @@ document.addEventListener("DOMContentLoaded", () => {
                           folders = getFolders(bookmarkTreeNodes)
                           populateFolderFilter(folders)
                           updateBookmarkCount()
-                          // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
                           let filtered = bookmarks
                           if (uiState.searchQuery) {
                             filtered = filtered.filter(
@@ -431,7 +719,8 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   function populateAddToFolderSelect() {
-    addToFolderSelect.innerHTML = '<option value="">Select Folder</option>'
+    const language = localStorage.getItem("appLanguage") || "en"
+    addToFolderSelect.innerHTML = `<option value="">${translations[language].selectFolder}</option>`
     folders.forEach((folder) => {
       const option = document.createElement("option")
       option.value = folder.id
@@ -445,63 +734,16 @@ document.addEventListener("DOMContentLoaded", () => {
       populateAddToFolderSelect()
       newFolderInput.value = ""
       newFolderInput.classList.remove("error")
+      const language = localStorage.getItem("appLanguage") || "en"
+      newFolderInput.placeholder = translations[language].newFolderPlaceholder
       addToFolderPopup.classList.remove("hidden")
       addToFolderSelect.focus()
     }
   })
 
-  addToFolderSaveButton.addEventListener("click", () => {
-    const targetFolderId = addToFolderSelect.value
-    if (targetFolderId) {
-      const movePromises = Array.from(selectedBookmarks).map((bookmarkId) => {
-        return new Promise((resolve) => {
-          safeChromeBookmarksCall(
-            "move",
-            [bookmarkId, { parentId: targetFolderId }],
-            resolve
-          )
-        })
-      })
-
-      Promise.all(movePromises).then(() => {
-        safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
-          if (bookmarkTreeNodes) {
-            bookmarkTree = bookmarkTreeNodes
-            bookmarks = flattenBookmarks(bookmarkTreeNodes)
-            folders = getFolders(bookmarkTreeNodes)
-            populateFolderFilter(folders)
-            updateBookmarkCount()
-            // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
-            let filtered = bookmarks
-            if (uiState.selectedFolderId) {
-              filtered = filtered.filter((bookmark) =>
-                isInFolder(bookmark, uiState.selectedFolderId)
-              )
-            }
-            if (uiState.searchQuery) {
-              filtered = filtered.filter(
-                (bookmark) =>
-                  bookmark.title?.toLowerCase().includes(uiState.searchQuery) ||
-                  bookmark.url?.toLowerCase().includes(uiState.searchQuery)
-              )
-            }
-            renderFilteredBookmarks(filtered, uiState.sortType)
-            selectedBookmarks.clear()
-            addToFolderButton.classList.add("hidden")
-            toggleDeleteFolderButton()
-            saveUIState()
-          }
-          addToFolderPopup.classList.add("hidden")
-        })
-      })
-    } else {
-      newFolderInput.classList.add("error")
-      newFolderInput.placeholder = "Select a folder or create a new one"
-    }
-  })
-
   createNewFolderButton.addEventListener("click", () => {
     const folderName = newFolderInput.value.trim()
+    const language = localStorage.getItem("appLanguage") || "en"
     if (folderName) {
       safeChromeBookmarksCall(
         "create",
@@ -515,7 +757,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 folders = getFolders(bookmarkTreeNodes)
                 populateFolderFilter(folders)
                 populateAddToFolderSelect()
-                // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
                 let filtered = bookmarks
                 if (uiState.selectedFolderId) {
                   filtered = filtered.filter((bookmark) =>
@@ -543,24 +784,75 @@ document.addEventListener("DOMContentLoaded", () => {
       )
     } else {
       newFolderInput.classList.add("error")
-      newFolderInput.placeholder = "Folder name cannot be empty"
+      newFolderInput.placeholder = translations[language].emptyFolderError
+    }
+  })
+
+  addToFolderSaveButton.addEventListener("click", () => {
+    const targetFolderId = addToFolderSelect.value
+    const language = localStorage.getItem("appLanguage") || "en"
+    if (targetFolderId) {
+      const movePromises = Array.from(selectedBookmarks).map((bookmarkId) => {
+        return new Promise((resolve) => {
+          safeChromeBookmarksCall(
+            "move",
+            [bookmarkId, { parentId: targetFolderId }],
+            resolve
+          )
+        })
+      })
+
+      Promise.all(movePromises).then(() => {
+        safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
+          if (bookmarkTreeNodes) {
+            bookmarkTree = bookmarkTreeNodes
+            bookmarks = flattenBookmarks(bookmarkTreeNodes)
+            folders = getFolders(bookmarkTreeNodes)
+            populateFolderFilter(folders)
+            updateBookmarkCount()
+            let filtered = bookmarks
+            if (uiState.selectedFolderId) {
+              filtered = filtered.filter((bookmark) =>
+                isInFolder(bookmark, uiState.selectedFolderId)
+              )
+            }
+            if (uiState.searchQuery) {
+              filtered = filtered.filter(
+                (bookmark) =>
+                  bookmark.title?.toLowerCase().includes(uiState.searchQuery) ||
+                  bookmark.url?.toLowerCase().includes(uiState.searchQuery)
+              )
+            }
+            renderFilteredBookmarks(filtered, uiState.sortType)
+            selectedBookmarks.clear()
+            addToFolderButton.classList.add("hidden")
+            toggleDeleteFolderButton()
+            saveUIState()
+          }
+          addToFolderPopup.classList.add("hidden")
+        })
+      })
+    } else {
+      newFolderInput.classList.add("error")
+      newFolderInput.placeholder = translations[language].selectFolderError
     }
   })
 
   addToFolderCancelButton.addEventListener("click", () => {
     const folderName = newFolderInput.value.trim()
+    const language = localStorage.getItem("appLanguage") || "en"
     if (folderName && !folders.some((f) => f.title === folderName)) {
-      if (confirm("You entered a folder name but didn't save. Discard it?")) {
+      if (confirm(translations[language].discardFolderPrompt)) {
         addToFolderPopup.classList.add("hidden")
         newFolderInput.value = ""
         newFolderInput.classList.remove("error")
-        newFolderInput.placeholder = "Or enter new folder name..."
+        newFolderInput.placeholder = translations[language].newFolderPlaceholder
       }
     } else {
       addToFolderPopup.classList.add("hidden")
       newFolderInput.value = ""
       newFolderInput.classList.remove("error")
-      newFolderInput.placeholder = "Or enter new folder name..."
+      newFolderInput.placeholder = translations[language].newFolderPlaceholder
     }
   })
 
@@ -626,8 +918,8 @@ document.addEventListener("DOMContentLoaded", () => {
         renderFilteredBookmarks(filtered, uiState.sortType)
         toggleDeleteFolderButton()
       } else {
-        folderListDiv.innerHTML =
-          "<p>No bookmarks found. Please check permissions.</p>"
+        const language = localStorage.getItem("appLanguage") || "en"
+        folderListDiv.innerHTML = `<p>${translations[language].noBookmarks}</p>`
       }
     })
   })
@@ -654,7 +946,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function populateFolderFilter(folders) {
-    folderFilter.innerHTML = '<option value="">All Bookmarks</option>'
+    const language = localStorage.getItem("appLanguage") || "en"
+    folderFilter.innerHTML = `<option value="">${translations[language].allBookmarks}</option>`
     folders.forEach((folder) => {
       const option = document.createElement("option")
       option.value = folder.id
@@ -666,6 +959,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateBookmarkCount() {
     const selectedFolderId = folderFilter.value
+    const language = localStorage.getItem("appLanguage") || "en"
     let count
     if (selectedFolderId) {
       count = bookmarks.filter(
@@ -674,7 +968,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       count = bookmarks.filter((b) => b.url).length
     }
-    bookmarkCountDiv.textContent = `Total Bookmarks: ${count}`
+    bookmarkCountDiv.textContent = `${translations[language].totalBookmarks}: ${count}`
   }
 
   function findParentFolder(bookmarkId, nodes) {
@@ -694,8 +988,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let sorted = [...bookmarksList]
     switch (sortType) {
       case "default":
-        sorted.sort((a, b) => (b.dateAdded || 0) - (a.dateAdded || 0))
-        break
       case "new":
         sorted.sort((a, b) => (b.dateAdded || 0) - (a.dateAdded || 0))
         break
@@ -732,9 +1024,10 @@ document.addEventListener("DOMContentLoaded", () => {
     currentBookmarkId = e.target.dataset.id
     const renamePopup = document.getElementById("rename-popup")
     const renameInput = document.getElementById("rename-input")
+    const language = localStorage.getItem("appLanguage") || "en"
     renameInput.value = ""
     renameInput.classList.remove("error")
-    renameInput.placeholder = "Enter new name..."
+    renameInput.placeholder = translations[language].renamePlaceholder
     renamePopup.classList.remove("hidden")
     renameInput.focus()
     safeChromeBookmarksCall("get", [currentBookmarkId], (bookmark) => {
@@ -810,7 +1103,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function handleDeleteBookmark(e) {
       const bookmarkId = e.target.dataset.id
-      if (confirm("Are you sure you want to delete this bookmark?")) {
+      const language = localStorage.getItem("appLanguage") || "en"
+      if (confirm(translations[language].deleteConfirm)) {
         safeChromeBookmarksCall("remove", [bookmarkId], () => {
           safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
             if (bookmarkTreeNodes) {
@@ -819,7 +1113,6 @@ document.addEventListener("DOMContentLoaded", () => {
               folders = getFolders(bookmarkTreeNodes)
               populateFolderFilter(folders)
               updateBookmarkCount()
-              // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
               let filtered = bookmarks
               if (uiState.selectedFolderId) {
                 filtered = filtered.filter((bookmark) =>
@@ -855,6 +1148,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function createBookmarkElement(bookmark) {
+    const language = localStorage.getItem("appLanguage") || "en"
     console.log("Rendering bookmark:", bookmark.id, bookmark.title)
     const div = document.createElement("div")
     div.className = "bookmark-item"
@@ -872,17 +1166,17 @@ document.addEventListener("DOMContentLoaded", () => {
       bookmark.title || bookmark.url
     }</a>
       <div class="dropdown-btn-group">
-        <button class="dropdown-btn">⋮</button>
+        <button class="dropdown-btn" aria-label="Bookmark options">⋮</button>
         <div class="dropdown-menu hidden">
-          <button class="menu-item add-to-folder" data-id="${
-            bookmark.id
-          }">Add to Folder</button>
-          <button class="menu-item delete-btn" data-id="${
-            bookmark.id
-          }">Delete</button>
-          <button class="menu-item rename-btn" data-id="${
-            bookmark.id
-          }">Rename</button>
+          <button class="menu-item add-to-folder" data-id="${bookmark.id}">${
+      translations[language].addToFolderOption
+    }</button>
+          <button class="menu-item delete-btn" data-id="${bookmark.id}">${
+      translations[language].deleteBookmarkOption
+    }</button>
+          <button class="menu-item rename-btn" data-id="${bookmark.id}">${
+      translations[language].renameBookmarkOption
+    }</button>
         </div>
       </div>
     `
@@ -891,10 +1185,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderAllBookmarks(bookmarksList) {
     console.log("Rendering all bookmarks, count:", bookmarksList.length)
+    const language = localStorage.getItem("appLanguage") || "en"
     const fragment = document.createDocumentFragment()
     const selectAllDiv = document.createElement("div")
     selectAllDiv.className = "select-all"
-
+    selectAllDiv.innerHTML = `
+      <input type="checkbox" id="select-all" style="display: ${
+        checkboxesVisible ? "inline-block" : "none"
+      }">
+      <label for="select-all">${translations[language].selectAll}</label>
+    `
     fragment.appendChild(selectAllDiv)
 
     uiState.sortType = sortFilter.value || "default"
@@ -943,6 +1243,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderFolderList(nodes) {
     console.log("Rendering folder list, nodes count:", nodes.length)
+    const language = localStorage.getItem("appLanguage") || "en"
     const fragment = document.createDocumentFragment()
     const selectAllDiv = document.createElement("div")
     selectAllDiv.className = "select-all"
@@ -950,7 +1251,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <input type="checkbox" id="select-all" style="display: ${
         checkboxesVisible ? "inline-block" : "none"
       }">
-      <label for="select-all">Select All</label>
+      <label for="select-all">${translations[language].selectAll}</label>
     `
     fragment.appendChild(selectAllDiv)
 
@@ -971,7 +1272,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const folderButton = document.createElement("button")
           folderButton.className = "folder-button"
-          folderButton.textContent = folder.title || "Unnamed Folder"
+          folderButton.textContent =
+            folder.title ||
+            translations[language].unnamedFolder ||
+            "Unnamed Folder"
           folderButton.addEventListener("click", () => {
             const dropdown = div.querySelector(".dropdown")
             if (dropdown) {
@@ -990,13 +1294,9 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!["1", "2"].includes(folder.id)) {
             const deleteFolderBtn = document.createElement("button")
             deleteFolderBtn.className = "delete-folder"
-            deleteFolderBtn.textContent = "Delete Folder"
+            deleteFolderBtn.textContent = translations[language].deleteFolder
             deleteFolderBtn.addEventListener("click", () => {
-              if (
-                confirm(
-                  "Are you sure you want to delete this folder and its contents?"
-                )
-              ) {
+              if (confirm(translations[language].deleteFolderConfirm)) {
                 safeChromeBookmarksCall("removeTree", [folder.id], () => {
                   safeChromeBookmarksCall(
                     "getTree",
@@ -1008,7 +1308,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         folders = getFolders(bookmarkTreeNodes)
                         populateFolderFilter(folders)
                         updateBookmarkCount()
-                        // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
                         let filtered = bookmarks
                         if (uiState.searchQuery) {
                           filtered = filtered.filter(
@@ -1147,9 +1446,7 @@ document.addEventListener("DOMContentLoaded", () => {
     uiState.sortType = sortFilter.value || "default"
 
     let filtered = bookmarks
-    if (uiState.selectedFolderId === "") {
-      renderFilteredBookmarks(filtered, uiState.sortType)
-    } else if (uiState.selectedFolderId) {
+    if (uiState.selectedFolderId) {
       filtered = filtered.filter((bookmark) =>
         isInFolder(bookmark, uiState.selectedFolderId)
       )
@@ -1192,7 +1489,8 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   createFolderButton.addEventListener("click", () => {
-    const folderName = prompt("Enter folder name:")
+    const language = localStorage.getItem("appLanguage") || "en"
+    const folderName = prompt(translations[language].newFolderPlaceholder)
     if (folderName) {
       safeChromeBookmarksCall(
         "create",
@@ -1205,7 +1503,6 @@ document.addEventListener("DOMContentLoaded", () => {
               folders = getFolders(bookmarkTreeNodes)
               populateFolderFilter(folders)
               updateBookmarkCount()
-              // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
               let filtered = bookmarks
               if (uiState.selectedFolderId) {
                 filtered = filtered.filter((bookmark) =>
@@ -1243,6 +1540,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderFilteredBookmarks(filtered, sortType) {
     console.log("Rendering filtered bookmarks, count:", filtered.length)
+    const language = localStorage.getItem("appLanguage") || "en"
     const fragment = document.createDocumentFragment()
     const selectAllDiv = document.createElement("div")
     selectAllDiv.className = "select-all"
@@ -1250,7 +1548,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <input type="checkbox" id="select-all" style="display: ${
         checkboxesVisible ? "inline-block" : "none"
       }">
-      <label for="select-all">Select All</label>
+      <label for="select-all">${translations[language].selectAll}</label>
     `
     fragment.appendChild(selectAllDiv)
 
