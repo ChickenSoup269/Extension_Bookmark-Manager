@@ -107,8 +107,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Hàm cập nhật theme
   function updateTheme() {
-    const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+    const savedTheme = localStorage.getItem("appTheme") || "system"
+    const isDarkMode =
+      savedTheme === "dark" ||
+      (savedTheme === "system" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
     document.body.classList.toggle("light-theme", !isDarkMode)
     document.body.classList.toggle("dark-theme", isDarkMode)
     folderListDiv.classList.toggle("light-theme", !isDarkMode)
@@ -120,10 +125,60 @@ document.addEventListener("DOMContentLoaded", () => {
       el.classList.toggle("dark-theme", isDarkMode)
     })
   }
+
+  // Khởi tạo theme và theo dõi thay đổi hệ thống
   updateTheme()
   window
     .matchMedia("(prefers-color-scheme: dark)")
-    .addEventListener("change", updateTheme)
+    .addEventListener("change", () => {
+      if (localStorage.getItem("appTheme") === "system") {
+        updateTheme()
+      }
+    })
+
+  // Thêm dropdown chọn theme vào menu settings
+  const themeOption = document.createElement("select")
+  themeOption.id = "theme-switcher"
+  themeOption.className = "select"
+  themeOption.innerHTML = `
+    <option value="system">Theme: System</option>
+    <option value="light">Theme: Light</option>
+    <option value="dark">Theme: Dark</option>
+  `
+  settingsMenu.appendChild(themeOption)
+
+  // Xử lý thay đổi theme
+  themeOption.addEventListener("change", (e) => {
+    localStorage.setItem("appTheme", e.target.value)
+    updateTheme()
+  })
+
+  // Load theme đã lưu
+  const savedTheme = localStorage.getItem("appTheme") || "system"
+  themeOption.value = savedTheme
+  updateTheme()
+
+  // Thêm chọn font vào menu settings
+  const fontOption = document.createElement("select")
+  fontOption.id = "font-switcher"
+  fontOption.className = "select"
+  fontOption.innerHTML = `
+    <option value="gohu">Font: GohuFont</option>
+    <option value="normal">Font: Normal</option>
+  `
+  settingsMenu.appendChild(fontOption)
+
+  // Xử lý thay đổi font
+  fontOption.addEventListener("change", (e) => {
+    document.body.classList.remove("font-gohu", "font-normal")
+    document.body.classList.add(`font-${e.target.value}`)
+    localStorage.setItem("appFont", e.target.value)
+  })
+
+  // Load font đã lưu
+  const savedFont = localStorage.getItem("appFont") || "normal"
+  document.body.classList.add(`font-${savedFont}`)
+  fontOption.value = savedFont
 
   toggleCheckboxesButton.addEventListener("click", () => {
     checkboxesVisible = !checkboxesVisible
@@ -169,11 +224,28 @@ document.addEventListener("DOMContentLoaded", () => {
               folders = getFolders(bookmarkTreeNodes)
               populateFolderFilter(folders)
               updateBookmarkCount()
-              renderFolderList(bookmarkTree)
+              // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
+              let filtered = bookmarks
+              if (uiState.selectedFolderId) {
+                filtered = filtered.filter((bookmark) =>
+                  isInFolder(bookmark, uiState.selectedFolderId)
+                )
+              }
+              if (uiState.searchQuery) {
+                filtered = filtered.filter(
+                  (bookmark) =>
+                    bookmark.title
+                      ?.toLowerCase()
+                      .includes(uiState.searchQuery) ||
+                    bookmark.url?.toLowerCase().includes(uiState.searchQuery)
+                )
+              }
+              renderFilteredBookmarks(filtered, uiState.sortType)
+              toggleDeleteFolderButton()
+              saveUIState()
             }
             document.getElementById("rename-popup").classList.add("hidden")
             currentBookmarkId = null
-            saveUIState()
           })
         }
       )
@@ -218,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Settings menu toggle
   settingsButton.addEventListener("click", (e) => {
+    console.log("Settings button clicked")
     e.stopPropagation()
     settingsMenu.classList.toggle("hidden")
   })
@@ -328,7 +401,20 @@ document.addEventListener("DOMContentLoaded", () => {
                           folders = getFolders(bookmarkTreeNodes)
                           populateFolderFilter(folders)
                           updateBookmarkCount()
-                          renderFolderList(bookmarkTree)
+                          // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
+                          let filtered = bookmarks
+                          if (uiState.searchQuery) {
+                            filtered = filtered.filter(
+                              (bookmark) =>
+                                bookmark.title
+                                  ?.toLowerCase()
+                                  .includes(uiState.searchQuery) ||
+                                bookmark.url
+                                  ?.toLowerCase()
+                                  .includes(uiState.searchQuery)
+                            )
+                          }
+                          renderFilteredBookmarks(filtered, uiState.sortType)
                           toggleDeleteFolderButton()
                           saveUIState()
                         }
@@ -385,15 +471,29 @@ document.addEventListener("DOMContentLoaded", () => {
             folders = getFolders(bookmarkTreeNodes)
             populateFolderFilter(folders)
             updateBookmarkCount()
-            renderFolderList(bookmarkTree) // Refreshes the UI after all moves
+            // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
+            let filtered = bookmarks
+            if (uiState.selectedFolderId) {
+              filtered = filtered.filter((bookmark) =>
+                isInFolder(bookmark, uiState.selectedFolderId)
+              )
+            }
+            if (uiState.searchQuery) {
+              filtered = filtered.filter(
+                (bookmark) =>
+                  bookmark.title?.toLowerCase().includes(uiState.searchQuery) ||
+                  bookmark.url?.toLowerCase().includes(uiState.searchQuery)
+              )
+            }
+            renderFilteredBookmarks(filtered, uiState.sortType)
             selectedBookmarks.clear()
             addToFolderButton.classList.add("hidden")
             toggleDeleteFolderButton()
             saveUIState()
           }
+          addToFolderPopup.classList.add("hidden")
         })
       })
-      addToFolderPopup.classList.add("hidden")
     } else {
       newFolderInput.classList.add("error")
       newFolderInput.placeholder = "Select a folder or create a new one"
@@ -415,7 +515,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 folders = getFolders(bookmarkTreeNodes)
                 populateFolderFilter(folders)
                 populateAddToFolderSelect()
-                renderFolderList(bookmarkTree) // Added: Refresh UI immediately after create
+                // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
+                let filtered = bookmarks
+                if (uiState.selectedFolderId) {
+                  filtered = filtered.filter((bookmark) =>
+                    isInFolder(bookmark, uiState.selectedFolderId)
+                  )
+                }
+                if (uiState.searchQuery) {
+                  filtered = filtered.filter(
+                    (bookmark) =>
+                      bookmark.title
+                        ?.toLowerCase()
+                        .includes(uiState.searchQuery) ||
+                      bookmark.url?.toLowerCase().includes(uiState.searchQuery)
+                  )
+                }
+                renderFilteredBookmarks(filtered, uiState.sortType)
                 newFolderInput.value = ""
                 newFolderInput.classList.remove("error")
                 addToFolderSelect.value = newFolder.id
@@ -447,6 +563,7 @@ document.addEventListener("DOMContentLoaded", () => {
       newFolderInput.placeholder = "Or enter new folder name..."
     }
   })
+
   addToFolderPopup.addEventListener("click", (e) => {
     if (e.target === addToFolderPopup) {
       addToFolderCancelButton.click()
@@ -455,34 +572,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   newFolderInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
-      const folderName = newFolderInput.value.trim()
-      if (folderName) {
-        safeChromeBookmarksCall(
-          "create",
-          [{ parentId: "2", title: folderName }],
-          (newFolder) => {
-            if (newFolder) {
-              safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
-                if (bookmarkTreeNodes) {
-                  bookmarkTree = bookmarkTreeNodes
-                  bookmarks = flattenBookmarks(bookmarkTreeNodes)
-                  folders = getFolders(bookmarkTreeNodes)
-                  populateFolderFilter(folders)
-                  populateAddToFolderSelect()
-                  renderFolderList(bookmarkTree) // Làm mới giao diện
-                  newFolderInput.value = ""
-                  newFolderInput.classList.remove("error")
-                  addToFolderSelect.value = newFolder.id
-                  saveUIState()
-                }
-              })
-            }
-          }
-        )
-      } else {
-        newFolderInput.classList.add("error")
-        newFolderInput.placeholder = "Folder name cannot be empty"
-      }
+      createNewFolderButton.click()
     }
   })
 
@@ -520,24 +610,20 @@ document.addEventListener("DOMContentLoaded", () => {
           folderFilter.value = ""
         }
         updateBookmarkCount()
-        if (uiState.selectedFolderId || uiState.searchQuery) {
-          let filtered = bookmarks
-          if (uiState.selectedFolderId) {
-            filtered = filtered.filter((bookmark) =>
-              isInFolder(bookmark, uiState.selectedFolderId)
-            )
-          }
-          if (uiState.searchQuery) {
-            filtered = filtered.filter(
-              (bookmark) =>
-                bookmark.title?.toLowerCase().includes(uiState.searchQuery) ||
-                bookmark.url?.toLowerCase().includes(uiState.searchQuery)
-            )
-          }
-          renderFilteredBookmarks(filtered, uiState.sortType)
-        } else {
-          renderAllBookmarks(bookmarks)
+        let filtered = bookmarks
+        if (uiState.selectedFolderId) {
+          filtered = filtered.filter((bookmark) =>
+            isInFolder(bookmark, uiState.selectedFolderId)
+          )
         }
+        if (uiState.searchQuery) {
+          filtered = filtered.filter(
+            (bookmark) =>
+              bookmark.title?.toLowerCase().includes(uiState.searchQuery) ||
+              bookmark.url?.toLowerCase().includes(uiState.searchQuery)
+          )
+        }
+        renderFilteredBookmarks(filtered, uiState.sortType)
         toggleDeleteFolderButton()
       } else {
         folderListDiv.innerHTML =
@@ -547,14 +633,11 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   function flattenBookmarks(nodes) {
+    console.log("Flattening bookmarks, nodes count:", nodes.length)
     let flat = []
     nodes.forEach((node) => {
-      if (node.url) {
-        flat.push(node)
-      }
-      if (node.children) {
-        flat = flat.concat(flattenBookmarks(node.children))
-      }
+      if (node.url) flat.push(node)
+      if (node.children) flat = flat.concat(flattenBookmarks(node.children))
     })
     return flat
   }
@@ -621,7 +704,7 @@ document.addEventListener("DOMContentLoaded", () => {
         break
       case "last-opened":
         sorted.sort((a, b) => {
-          const parentA = findParentFolder(a.id, bookmarkTree) || {} // Fixed typo: was 'bookmarkodrama'
+          const parentA = findParentFolder(a.id, bookmarkTree) || {}
           const parentB = findParentFolder(b.id, bookmarkTree) || {}
           const dateA = parentA.dateGroupModified || a.dateAdded || 0
           const dateB = parentB.dateGroupModified || b.dateAdded || 0
@@ -736,7 +819,23 @@ document.addEventListener("DOMContentLoaded", () => {
               folders = getFolders(bookmarkTreeNodes)
               populateFolderFilter(folders)
               updateBookmarkCount()
-              renderFolderList(bookmarkTree)
+              // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
+              let filtered = bookmarks
+              if (uiState.selectedFolderId) {
+                filtered = filtered.filter((bookmark) =>
+                  isInFolder(bookmark, uiState.selectedFolderId)
+                )
+              }
+              if (uiState.searchQuery) {
+                filtered = filtered.filter(
+                  (bookmark) =>
+                    bookmark.title
+                      ?.toLowerCase()
+                      .includes(uiState.searchQuery) ||
+                    bookmark.url?.toLowerCase().includes(uiState.searchQuery)
+                )
+              }
+              renderFilteredBookmarks(filtered, uiState.sortType)
               saveUIState()
             }
           })
@@ -756,6 +855,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function createBookmarkElement(bookmark) {
+    console.log("Rendering bookmark:", bookmark.id, bookmark.title)
     const div = document.createElement("div")
     div.className = "bookmark-item"
     const favicon = `https://www.google.com/s2/favicons?sz=32&domain=${
@@ -790,6 +890,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderAllBookmarks(bookmarksList) {
+    console.log("Rendering all bookmarks, count:", bookmarksList.length)
     const fragment = document.createDocumentFragment()
     const selectAllDiv = document.createElement("div")
     selectAllDiv.className = "select-all"
@@ -841,6 +942,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderFolderList(nodes) {
+    console.log("Rendering folder list, nodes count:", nodes.length)
     const fragment = document.createDocumentFragment()
     const selectAllDiv = document.createElement("div")
     selectAllDiv.className = "select-all"
@@ -906,7 +1008,20 @@ document.addEventListener("DOMContentLoaded", () => {
                         folders = getFolders(bookmarkTreeNodes)
                         populateFolderFilter(folders)
                         updateBookmarkCount()
-                        renderFolderList(bookmarkTree)
+                        // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
+                        let filtered = bookmarks
+                        if (uiState.searchQuery) {
+                          filtered = filtered.filter(
+                            (bookmark) =>
+                              bookmark.title
+                                ?.toLowerCase()
+                                .includes(uiState.searchQuery) ||
+                              bookmark.url
+                                ?.toLowerCase()
+                                .includes(uiState.searchQuery)
+                          )
+                        }
+                        renderFilteredBookmarks(filtered, uiState.sortType)
                         saveUIState()
                       }
                     }
@@ -959,7 +1074,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveUIState()
 
     function handleSelectAll(e) {
-      const Icheckboxes = document.querySelectorAll(".bookmark-checkbox")
+      const checkboxes = document.querySelectorAll(".bookmark-checkbox")
       if (e.target.checked) {
         checkboxes.forEach((cb) => {
           const bookmarkId = cb.dataset.id
@@ -1007,7 +1122,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderFilteredBookmarks(filtered, uiState.sortType)
       toggleDeleteFolderButton()
       saveUIState()
-    }, 300)
+    }, 150)
   )
 
   if (clearSearchButton) {
@@ -1033,7 +1148,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let filtered = bookmarks
     if (uiState.selectedFolderId === "") {
-      renderAllBookmarks(bookmarks)
+      renderFilteredBookmarks(filtered, uiState.sortType)
     } else if (uiState.selectedFolderId) {
       filtered = filtered.filter((bookmark) =>
         isInFolder(bookmark, uiState.selectedFolderId)
@@ -1070,11 +1185,7 @@ document.addEventListener("DOMContentLoaded", () => {
           bookmark.url?.toLowerCase().includes(uiState.searchQuery)
       )
     }
-    if (uiState.selectedFolderId || uiState.searchQuery) {
-      renderFilteredBookmarks(filtered, uiState.sortType)
-    } else {
-      renderAllBookmarks(bookmarks)
-    }
+    renderFilteredBookmarks(filtered, uiState.sortType)
     updateBookmarkCount()
     toggleDeleteFolderButton()
     saveUIState()
@@ -1094,7 +1205,23 @@ document.addEventListener("DOMContentLoaded", () => {
               folders = getFolders(bookmarkTreeNodes)
               populateFolderFilter(folders)
               updateBookmarkCount()
-              renderFolderList(bookmarkTree)
+              // Sửa: Gọi renderFilteredBookmarks thay vì renderFolderList
+              let filtered = bookmarks
+              if (uiState.selectedFolderId) {
+                filtered = filtered.filter((bookmark) =>
+                  isInFolder(bookmark, uiState.selectedFolderId)
+                )
+              }
+              if (uiState.searchQuery) {
+                filtered = filtered.filter(
+                  (bookmark) =>
+                    bookmark.title
+                      ?.toLowerCase()
+                      .includes(uiState.searchQuery) ||
+                    bookmark.url?.toLowerCase().includes(uiState.searchQuery)
+                )
+              }
+              renderFilteredBookmarks(filtered, uiState.sortType)
               toggleDeleteFolderButton()
               saveUIState()
             }
@@ -1106,18 +1233,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function isInFolder(bookmark, folderId) {
     let node = bookmark
-    while (node.parentId) {
+    while (node && node.parentId) {
       if (node.parentId === folderId) return true
-      node = bookmarks.find((b) => b.id === node.parentId) || { parentId: null }
+      node = bookmarks.find((b) => b.id === node.parentId) || null
+      if (!node) break
     }
     return false
   }
 
   function renderFilteredBookmarks(filtered, sortType) {
+    console.log("Rendering filtered bookmarks, count:", filtered.length)
     const fragment = document.createDocumentFragment()
     const selectAllDiv = document.createElement("div")
     selectAllDiv.className = "select-all"
-
+    selectAllDiv.innerHTML = `
+      <input type="checkbox" id="select-all" style="display: ${
+        checkboxesVisible ? "inline-block" : "none"
+      }">
+      <label for="select-all">Select All</label>
+    `
     fragment.appendChild(selectAllDiv)
 
     const sortedBookmarks = sortBookmarks(filtered, sortType)
@@ -1158,32 +1292,5 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       addToFolderButton.classList.toggle("hidden", selectedBookmarks.size === 0)
     }
-  }
-})
-
-document.addEventListener("DOMContentLoaded", () => {
-  const settingsMenu = document.getElementById("settings-menu")
-
-  // Thêm chọn font vào menu settings
-  const fontOption = document.createElement("select")
-  fontOption.id = "font-switcher"
-  fontOption.innerHTML = `
-    <option value="gohu">GohuFont</option>
-    <option value="normal">Normal</option>
-  `
-  settingsMenu.appendChild(fontOption)
-
-  // Khi đổi font
-  fontOption.addEventListener("change", (e) => {
-    document.body.classList.remove("font-gohu", "font-normal")
-    document.body.classList.add(`font-${e.target.value}`)
-    localStorage.setItem("appFont", e.target.value) // Lưu vào localStorage
-  })
-
-  // Load font đã lưu
-  const savedFont = localStorage.getItem("appFont")
-  if (savedFont) {
-    document.body.classList.add(`font-${savedFont}`)
-    fontOption.value = savedFont
   }
 })

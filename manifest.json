@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bookmark Manager",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A user-friendly Chrome bookmark manager with search functionality",
   "permissions": ["bookmarks", "storage"],
   "action": {
