@@ -8,6 +8,7 @@ import {
   setFolders,
   setBookmarkTree,
 } from "./state.js"
+import { attachDropdownListeners } from "./events.js" // Import to call after rendering
 
 export function updateUILanguage(elements, language) {
   const t = translations[language] || translations.en
@@ -25,7 +26,6 @@ export function updateUILanguage(elements, language) {
   elements.addToFolderButton.textContent = t.addToFolder
   elements.deleteFolderButton.textContent = t.deleteFolder
   elements.exportBookmarksOption.textContent = t.exportBookmarks
-  elements.importBookmarksOption.textContent = t.importBookmarks
   elements.toggleCheckboxesButton.textContent = uiState.checkboxesVisible
     ? t.hideCheckboxes
     : t.showCheckboxes
@@ -41,8 +41,6 @@ export function updateUILanguage(elements, language) {
   elements.createNewFolderButton.textContent = t.createNewFolder
   elements.addToFolderSaveButton.textContent = t.save
   elements.addToFolderCancelButton.textContent = t.cancel
-  elements.renameSave.textContent = t.save
-  elements.renameCancel.textContent = t.cancel
   elements.bookmarkCountDiv.textContent = `${t.totalBookmarks}: ${
     elements.bookmarkCountDiv.textContent.match(/\d+$/)?.[0] || 0
   }`
@@ -174,6 +172,7 @@ function toggleDeleteFolderButton(elements) {
 }
 
 function renderBookmarks(bookmarksList, elements) {
+  console.log("Rendering bookmarks, count:", bookmarksList.length) // Debug log
   const language = localStorage.getItem("appLanguage") || "en"
   const fragment = document.createDocumentFragment()
   const selectAllDiv = document.createElement("div")
@@ -201,6 +200,8 @@ function renderBookmarks(bookmarksList, elements) {
   elements.sortFilter.value = uiState.sortType
 
   attachSelectAllListener(elements)
+  attachDropdownListeners(elements) // Re-attach dropdown listeners after rendering
+  console.log("Dropdown listeners attached after render") // Debug log
 }
 
 function sortBookmarks(bookmarksList, sortType) {
@@ -250,7 +251,7 @@ function findParentFolder(bookmarkId, nodes) {
 
 function createBookmarkElement(bookmark) {
   const language = localStorage.getItem("appLanguage") || "en"
-  console.log("Rendering bookmark:", bookmark.id, bookmark.title)
+  console.log("Creating bookmark element:", bookmark.id, bookmark.title) // Debug log
   const div = document.createElement("div")
   div.className = "bookmark-item"
   let favicon

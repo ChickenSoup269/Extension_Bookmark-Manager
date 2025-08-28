@@ -544,108 +544,121 @@ export function setupEventListeners(elements) {
     }
   })
 
-  attachDropdownListeners(elements)
+  attachDropdownListeners(elements) // Initial attachment
+}
 
-  function attachDropdownListeners(elements) {
-    document.querySelectorAll(".dropdown-btn").forEach((button) => {
-      button.removeEventListener("click", handleDropdownClick)
-      button.addEventListener("click", handleDropdownClick)
+export function attachDropdownListeners(elements) {
+  console.log("Attaching dropdown listeners") // Debug log
+  const dropdownButtons = document.querySelectorAll(".dropdown-btn")
+  console.log("Found dropdown buttons:", dropdownButtons.length) // Debug log
+
+  dropdownButtons.forEach((button) => {
+    button.removeEventListener("click", handleDropdownClick) // Prevent duplicate listeners
+    button.addEventListener("click", handleDropdownClick)
+  })
+
+  document.querySelectorAll(".add-to-folder").forEach((button) => {
+    button.removeEventListener("click", handleAddToFolder)
+    button.addEventListener("click", handleAddToFolder)
+  })
+
+  document.querySelectorAll(".delete-btn").forEach((button) => {
+    button.removeEventListener("click", handleDeleteBookmark)
+    button.addEventListener("click", handleDeleteBookmark)
+  })
+
+  document.querySelectorAll(".rename-btn").forEach((button) => {
+    button.removeEventListener("click", handleRenameBookmark)
+    button.addEventListener("click", handleRenameBookmark)
+  })
+
+  document.querySelectorAll(".bookmark-checkbox").forEach((checkbox) => {
+    checkbox.removeEventListener("change", handleBookmarkCheckbox)
+    checkbox.addEventListener("change", handleBookmarkCheckbox)
+  })
+
+  function handleDropdownClick(e) {
+    e.stopPropagation()
+    const menu = e.target.nextElementSibling
+    console.log("Dropdown button clicked, menu:", menu) // Debug log
+    if (!menu || !menu.classList.contains("dropdown-menu")) {
+      console.error("Dropdown menu not found for button:", e.target)
+      return
+    }
+    const isMenuOpen = !menu.classList.contains("hidden")
+    console.log("Menu open status before toggle:", isMenuOpen) // Debug log
+
+    // Close all other dropdowns
+    document.querySelectorAll(".dropdown-menu").forEach((m) => {
+      if (m !== menu) m.classList.add("hidden")
     })
 
-    document.querySelectorAll(".add-to-folder").forEach((button) => {
-      button.removeEventListener("click", handleAddToFolder)
-      button.addEventListener("click", handleAddToFolder)
-    })
-
-    document.querySelectorAll(".delete-btn").forEach((button) => {
-      button.removeEventListener("click", handleDeleteBookmark)
-      button.addEventListener("click", handleDeleteBookmark)
-    })
-
-    document.querySelectorAll(".rename-btn").forEach((button) => {
-      button.removeEventListener("click", handleRenameBookmark)
-      button.addEventListener("click", handleRenameBookmark)
-    })
-
-    document.querySelectorAll(".bookmark-checkbox").forEach((checkbox) => {
-      checkbox.removeEventListener("change", handleBookmarkCheckbox)
-      checkbox.addEventListener("change", handleBookmarkCheckbox)
-    })
-
-    function handleDropdownClick(e) {
-      e.stopPropagation()
-      const menu = e.target.nextElementSibling
-      const isMenuOpen = menu && !menu.classList.contains("hidden")
-
-      document.querySelectorAll(".dropdown-menu").forEach((m) => {
-        m.classList.add("hidden")
-      })
-
-      if (menu && !isMenuOpen) {
-        menu.classList.remove("hidden")
-      }
-    }
-
-    function handleAddToFolder(e) {
-      const bookmarkId = e.target.dataset.id
-      selectedBookmarks.clear()
-      selectedBookmarks.add(bookmarkId)
-      elements.addToFolderButton.click()
-    }
-
-    function handleDeleteBookmark(e) {
-      const bookmarkId = e.target.dataset.id
-      const language = localStorage.getItem("appLanguage") || "en"
-      if (confirm(translations[language].deleteConfirm)) {
-        safeChromeBookmarksCall("remove", [bookmarkId], () => {
-          getBookmarkTree((bookmarkTreeNodes) => {
-            if (bookmarkTreeNodes) {
-              renderFilteredBookmarks(bookmarkTreeNodes, elements)
-              alert(translations[language].deleteBookmarkSuccess)
-            }
-          })
-        })
-      }
-    }
-
-    function handleRenameBookmark(e) {
-      setCurrentBookmarkId(e.target.dataset.id)
-      const language = localStorage.getItem("appLanguage") || "en"
-      elements.renameInput.value = ""
-      elements.renameInput.classList.remove("error")
-      elements.renameInput.placeholder =
-        translations[language].renamePlaceholder
-      elements.renamePopup.classList.remove("hidden")
-      elements.renameInput.focus()
-      safeChromeBookmarksCall("get", [currentBookmarkId], (bookmark) => {
-        if (bookmark && bookmark[0]) {
-          elements.renameInput.value = bookmark[0].title || ""
-        }
-      })
-    }
-
-    function handleBookmarkCheckbox(e) {
-      const bookmarkId = e.target.dataset.id
-      if (e.target.checked) {
-        selectedBookmarks.add(bookmarkId)
-      } else {
-        selectedBookmarks.delete(bookmarkId)
-      }
-      elements.addToFolderButton.classList.toggle(
-        "hidden",
-        selectedBookmarks.size === 0
-      )
-    }
+    // Toggle the current menu
+    menu.classList.toggle("hidden")
+    console.log(
+      "Menu open status after toggle:",
+      !menu.classList.contains("hidden")
+    ) // Debug log
   }
 
-  function populateAddToFolderSelect(elements) {
+  function handleAddToFolder(e) {
+    const bookmarkId = e.target.dataset.id
+    selectedBookmarks.clear()
+    selectedBookmarks.add(bookmarkId)
+    elements.addToFolderButton.click()
+  }
+
+  function handleDeleteBookmark(e) {
+    const bookmarkId = e.target.dataset.id
     const language = localStorage.getItem("appLanguage") || "en"
-    elements.addToFolderSelect.innerHTML = `<option value="">${translations[language].selectFolder}</option>`
-    uiState.folders.forEach((folder) => {
-      const option = document.createElement("option")
-      option.value = folder.id
-      option.textContent = folder.title
-      elements.addToFolderSelect.appendChild(option)
+    if (confirm(translations[language].deleteConfirm)) {
+      safeChromeBookmarksCall("remove", [bookmarkId], () => {
+        getBookmarkTree((bookmarkTreeNodes) => {
+          if (bookmarkTreeNodes) {
+            renderFilteredBookmarks(bookmarkTreeNodes, elements)
+            alert(translations[language].deleteBookmarkSuccess)
+          }
+        })
+      })
+    }
+  }
+
+  function handleRenameBookmark(e) {
+    setCurrentBookmarkId(e.target.dataset.id)
+    const language = localStorage.getItem("appLanguage") || "en"
+    elements.renameInput.value = ""
+    elements.renameInput.classList.remove("error")
+    elements.renameInput.placeholder = translations[language].renamePlaceholder
+    elements.renamePopup.classList.remove("hidden")
+    elements.renameInput.focus()
+    safeChromeBookmarksCall("get", [currentBookmarkId], (bookmark) => {
+      if (bookmark && bookmark[0]) {
+        elements.renameInput.value = bookmark[0].title || ""
+      }
     })
   }
+
+  function handleBookmarkCheckbox(e) {
+    const bookmarkId = e.target.dataset.id
+    if (e.target.checked) {
+      selectedBookmarks.add(bookmarkId)
+    } else {
+      selectedBookmarks.delete(bookmarkId)
+    }
+    elements.addToFolderButton.classList.toggle(
+      "hidden",
+      selectedBookmarks.size === 0
+    )
+  }
+}
+
+function populateAddToFolderSelect(elements) {
+  const language = localStorage.getItem("appLanguage") || "en"
+  elements.addToFolderSelect.innerHTML = `<option value="">${translations[language].selectFolder}</option>`
+  uiState.folders.forEach((folder) => {
+    const option = document.createElement("option")
+    option.value = folder.id
+    option.textContent = folder.title
+    elements.addToFolderSelect.appendChild(option)
+  })
 }

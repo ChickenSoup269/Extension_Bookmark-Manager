@@ -68,11 +68,6 @@ body.font-gohu * {
   font-family: "GohuFont", Arial, sans-serif !important;
 }
 
-body.font-normal,
-body.font-normal * {
-  font-family: Arial, sans-serif !important;
-}
-
 body {
   width: 360px;
   background-color: var(--bg-primary);
