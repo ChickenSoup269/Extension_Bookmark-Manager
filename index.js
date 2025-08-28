@@ -50,6 +50,10 @@ const translations = {
     importInvalidFile:
       "Invalid file format. Please select a valid JSON bookmark file.",
     importError: "Failed to import bookmarks. Please try again.",
+    addToFolderSuccess: "Bookmark(s) added to folder successfully!",
+    deleteBookmarkSuccess: "Bookmark deleted successfully!",
+    exportPrompt:
+      "Choose export format: JSON or HTML (data will be saved as JSON).",
   },
   vi: {
     allBookmarks: "Tất cả Dấu trang",
@@ -101,6 +105,10 @@ const translations = {
     importInvalidFile:
       "Định dạng tệp không hợp lệ. Vui lòng chọn tệp JSON dấu trang hợp lệ.",
     importError: "Không thể nhập dấu trang. Vui lòng thử lại.",
+    addToFolderSuccess: "Dấu trang đã được thêm vào thư mục thành công!",
+    deleteBookmarkSuccess: "Dấu trang đã được xóa thành công!",
+    exportPrompt:
+      "Chọn định dạng xuất: JSON hoặc HTML (dữ liệu sẽ được lưu dưới dạng JSON).",
   },
 }
 
@@ -483,30 +491,591 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   exportBookmarksOption.addEventListener("click", () => {
-    safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
-      if (bookmarkTreeNodes) {
-        const exportData = {
-          timestamp: new Date().toISOString(),
-          bookmarks: bookmarkTreeNodes,
-        }
-        const jsonString = JSON.stringify(exportData, null, 2)
-        const blob = new Blob([jsonString], { type: "application/json" })
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement("a")
-        link.href = url
-        link.download = `bookmarks_${
-          new Date().toISOString().split("T")[0]
-        }.json`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
-        settingsMenu.classList.add("hidden")
-      } else {
-        const language = localStorage.getItem("appLanguage") || "en"
-        alert(translations[language].errorUnexpected)
+    const language = localStorage.getItem("appLanguage") || "en"
+
+    // Tạo dropdown modal
+    const modal = document.createElement("div")
+    modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    font-family: Arial, sans-serif;
+  `
+
+    const dropdown = document.createElement("div")
+    dropdown.style.cssText = `
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    text-align: center;
+    min-width: 300px;
+  `
+
+    dropdown.innerHTML = `
+    <h3 style="margin: 0 0 20px 0; color: #333;">Export Bookmarks</h3>
+    <p style="margin: 0 0 20px 0; color: #666;">Choose export format:</p>
+    <div style="margin-bottom: 20px;">
+      <select id="formatSelect" style="
+        padding: 10px 15px;
+        font-size: 16px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        background: white;
+        color: #333;
+        cursor: pointer;
+        width: 200px;
+      ">
+        <option value="JSON">JSON </option>
+        <option value="HTML">HTML </option>
+      </select>
+    </div>
+    <div>
+      <button id="exportBtn" style="
+        background: green;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-right: 10px;
+      ">Export</button>
+      <button id="cancelBtn" style="
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+      ">Cancel</button>
+    </div>
+  `
+
+    // Add CSS styles for modal
+    const modalCSS = document.createElement("style")
+    modalCSS.textContent = `
+    .export-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+    
+    .export-dropdown {
+      background: var(--bg-color, #fff);
+      color: var(--text-color, #333);
+      border: 1px solid var(--border-color, #ddd);
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      text-align: center;
+      min-width: 320px;
+      max-width: 400px;
+    }
+    
+    .export-dropdown h3 {
+      margin: 0 0 15px 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .export-dropdown p {
+      margin: 0 0 20px 0;
+      opacity: 0.8;
+    }
+    
+    .select-container {
+      margin-bottom: 25px;
+    }
+    
+    .button-container {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    
+    .export-dropdown .select {
+      width: 220px;
+      padding: 10px 15px;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+    
+    .export-dropdown .button {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .export-dropdown .button.primary {
+      background: var(--primary-color, #007bff);
+      color: white;
+    }
+    
+    .export-dropdown .button.primary:hover {
+      background: var(--primary-hover, #0056b3);
+    }
+    
+    .export-dropdown .button.secondary {
+      background: var(--secondary-color, #6c757d);
+      color: white;
+    }
+    
+    .export-dropdown .button.secondary:hover {
+      background: var(--secondary-hover, #5a6268);
+    }
+    
+    /* Dark theme */
+    .dark-theme .export-dropdown {
+      --bg-color: #2d2d2d;
+      --text-color: #fff;
+      --border-color: #555;
+      --primary-color: #0d6efd;
+      --primary-hover: #0b5ed7;
+      --secondary-color: #6c757d;
+      --secondary-hover: #5c636a;
+    }
+    
+    /* Light theme */
+    .light-theme .export-dropdown {
+      --bg-color: #fff;
+      --text-color: #333;
+      --border-color: #ddd;
+      --primary-color: #007bff;
+      --primary-hover: #0056b3;
+      --secondary-color: #6c757d;
+      --secondary-hover: #5a6268;
+    }
+  `
+    document.head.appendChild(modalCSS)
+
+    modal.appendChild(dropdown)
+    document.body.appendChild(modal)
+
+    // Apply theme to modal
+    const savedTheme = localStorage.getItem("appTheme") || "system"
+    const isDarkMode =
+      savedTheme === "dark" ||
+      (savedTheme === "system" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+
+    dropdown.classList.toggle("light-theme", !isDarkMode)
+    dropdown.classList.toggle("dark-theme", isDarkMode)
+    dropdown.querySelectorAll(".select, .button").forEach((el) => {
+      el.classList.toggle("light-theme", !isDarkMode)
+      el.classList.toggle("dark-theme", isDarkMode)
+    })
+
+    // Focus vào select
+    const formatSelect = dropdown.querySelector("#formatSelect")
+    formatSelect.focus()
+
+    // Xử lý events
+    dropdown.querySelector("#exportBtn").addEventListener("click", () => {
+      const format = formatSelect.value
+      document.body.removeChild(modal)
+
+      // Tiếp tục với logic export
+      processBookmarkExport(format)
+    })
+
+    dropdown.querySelector("#cancelBtn").addEventListener("click", () => {
+      document.body.removeChild(modal)
+    })
+
+    // Đóng modal khi click outside
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal)
       }
     })
+
+    // Xử lý keyboard
+    modal.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        document.body.removeChild(modal)
+      } else if (e.key === "Enter") {
+        dropdown.querySelector("#exportBtn").click()
+      }
+    })
+
+    function processBookmarkExport(format) {
+      safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
+        if (!bookmarkTreeNodes) {
+          alert(translations[language].errorUnexpected)
+          return
+        }
+        if (format === "JSON") {
+          // JSON export
+          const exportData = {
+            timestamp: new Date().toISOString(),
+            bookmarks: bookmarkTreeNodes,
+          }
+          const jsonString = JSON.stringify(exportData, null, 2)
+          const blob = new Blob([jsonString], { type: "application/json" })
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement("a")
+          link.href = url
+          link.download = `bookmarks_${
+            new Date().toISOString().split("T")[0]
+          }.json`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+        } else if (format === "HTML") {
+          // HTML export với pixel style
+          function getFaviconUrl(url) {
+            try {
+              const domain = new URL(url).hostname
+              return `https://www.google.com/s2/favicons?domain=${domain}&sz=16`
+            } catch {
+              return null
+            }
+          }
+
+          function bookmarksToHTML(nodes, level = 0) {
+            let html = '<ul class="bookmark-list">\n'
+            for (const node of nodes) {
+              if (node.url) {
+                const faviconUrl = getFaviconUrl(node.url)
+                const faviconHtml = faviconUrl
+                  ? `<img class="favicon" src="${faviconUrl}" alt="" onerror="this.style.display='none'">`
+                  : '<span class="no-favicon">●</span>'
+
+                html += `<li class="bookmark-item">
+                <a href="${node.url}" class="bookmark-link">
+                  ${faviconHtml}
+                  <span class="bookmark-title">${node.title || node.url}</span>
+                </a>
+              </li>\n`
+              } else {
+                html += `<li class="folder-item">
+                <details class="folder-details" ${level < 2 ? "open" : ""}>
+                  <summary class="folder-title">
+                    <span class="folder-icon">▶</span>
+                    ${node.title || "Folder"}
+                  </summary>`
+                if (node.children && node.children.length > 0) {
+                  html += bookmarksToHTML(node.children, level + 1)
+                }
+                html += `</details>
+              </li>\n`
+              }
+            }
+            html += "</ul>\n"
+            return html
+          }
+
+          // Determine theme for HTML export
+          const savedTheme = localStorage.getItem("appTheme") || "system"
+          const isDarkMode =
+            savedTheme === "dark" ||
+            (savedTheme === "system" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches)
+
+          const cleanCSS = `
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: ${isDarkMode ? "#1a1a1a" : "#ffffff"};
+    color: ${isDarkMode ? "#e0e0e0" : "#333333"};
+    margin: 0;
+    padding: 30px;
+    min-height: 100vh;
+  }
+  
+  h1 {
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 25px;
+    background: ${isDarkMode ? "#2d2d2d" : "#f8f9fa"};
+    color: ${isDarkMode ? "#ffffff" : "#212529"};
+    border: 1px solid ${isDarkMode ? "#444" : "#dee2e6"};
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  
+  .bookmark-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0 25px;
+  }
+  
+  .bookmark-list:first-child {
+    margin-left: 0;
+  }
+  
+  .bookmark-item,
+  .folder-item {
+    margin: 6px 0;
+  }
+  
+  .bookmark-link {
+    display: flex;
+    align-items: center;
+    color: ${isDarkMode ? "#e0e0e0" : "#333333"};
+    text-decoration: none;
+    padding: 10px 15px;
+    background: ${isDarkMode ? "#2d2d2d" : "#ffffff"};
+    border: 1px solid ${isDarkMode ? "#444" : "#e0e0e0"};
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    margin: 4px 0;
+  }
+  
+  .bookmark-link:hover {
+    background: ${isDarkMode ? "#3d3d3d" : "#f8f9fa"};
+    border-color: ${isDarkMode ? "#666" : "#007bff"};
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px ${
+      isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,123,255,0.15)"
+    };
+  }
+  
+  .favicon {
+    width: 16px;
+    height: 16px;
+    margin-right: 12px;
+    border-radius: 2px;
+    background: ${isDarkMode ? "#404040" : "#f0f0f0"};
+  }
+  
+  .no-favicon {
+    width: 16px;
+    height: 16px;
+    margin-right: 12px;
+    display: inline-block;
+    text-align: center;
+    background: ${isDarkMode ? "#404040" : "#f0f0f0"};
+    color: ${isDarkMode ? "#888" : "#666"};
+    font-size: 10px;
+    line-height: 16px;
+    border-radius: 2px;
+  }
+  
+  .bookmark-title {
+    word-break: break-word;
+    flex: 1;
+    font-weight: 400;
+  }
+  
+  .folder-details {
+    background: ${isDarkMode ? "#232323" : "#fafafa"};
+    border: 1px solid ${isDarkMode ? "#404040" : "#e5e5e5"};
+    border-radius: 6px;
+    padding: 8px;
+    margin: 8px 0;
+  }
+  
+  .folder-details[open] {
+    border-color: ${isDarkMode ? "#555" : "#007bff"};
+  }
+  
+  .folder-title {
+    font-size: 14px;
+    color: ${isDarkMode ? "#ffffff" : "#212529"};
+    cursor: pointer;
+    padding: 12px 15px;
+    background: ${isDarkMode ? "#2d2d2d" : "#ffffff"};
+    border: 1px solid ${isDarkMode ? "#444" : "#dee2e6"};
+    border-radius: 4px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    user-select: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .folder-title:hover {
+    background: ${isDarkMode ? "#3d3d3d" : "#f8f9fa"};
+    border-color: ${isDarkMode ? "#666" : "#007bff"};
+  }
+  
+  .folder-title::-webkit-details-marker {
+    display: none;
+  }
+  
+  .folder-icon {
+    margin-right: 10px;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+    display: inline-block;
+    width: 16px;
+    color: ${isDarkMode ? "#888" : "#666"};
+  }
+  
+  .folder-details[open] .folder-icon {
+    transform: rotate(90deg);
+  }
+  
+  .export-info {
+    background: ${isDarkMode ? "#2d2d2d" : "#f8f9fa"};
+    border: 1px solid ${isDarkMode ? "#444" : "#dee2e6"};
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 30px;
+    font-size: 13px;
+    color: ${isDarkMode ? "#b0b0b0" : "#6c757d"};
+  }
+  
+  .export-info strong {
+    color: ${isDarkMode ? "#ffffff" : "#212529"};
+  }
+  
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: ${isDarkMode ? "#1a1a1a" : "#f1f1f1"};
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: ${isDarkMode ? "#555" : "#c1c1c1"};
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: ${isDarkMode ? "#777" : "#a8a8a8"};
+  }
+  
+  /* Print styles */
+  @media print {
+    body {
+      background: #fff !important;
+      color: #000 !important;
+      font-size: 12px;
+    }
+    
+    .bookmark-link {
+      background: #f9f9f9 !important;
+      border-color: #ddd !important;
+      color: #000 !important;
+    }
+    
+    .folder-title {
+      background: #f5f5f5 !important;
+      color: #000 !important;
+    }
+  }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    body {
+      padding: 20px 15px;
+      font-size: 13px;
+    }
+    
+    h1 {
+      font-size: 24px;
+      padding: 20px;
+    }
+    
+    .bookmark-link {
+      padding: 8px 12px;
+    }
+    
+    .bookmark-list {
+      margin-left: 15px;
+    }
+  }
+</style>
+        `
+
+          const header = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmarks Export</title>
+  ${cleanCSS}
+</head>
+<body>
+  <h1>📚 My Bookmarks</h1>
+  <div class="export-info">
+    <strong>EXPORTED:</strong> ${new Date().toLocaleString()}<br>
+    <strong>THEME:</strong> ${isDarkMode ? "Dark Mode" : "Light Mode"}<br>
+    <strong>TOTAL:</strong> Loading bookmarks...
+  </div>
+`
+
+          const footer = `
+  <script>
+    // Count total bookmarks
+    const bookmarkCount = document.querySelectorAll('.bookmark-link').length;
+    const folderCount = document.querySelectorAll('.folder-title').length;
+    const exportInfo = document.querySelector('.export-info');
+    exportInfo.innerHTML = exportInfo.innerHTML.replace('Loading bookmarks...', 
+      bookmarkCount + ' bookmarks in ' + folderCount + ' folders');
+    
+    // Add click sound effect
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('.bookmark-link') || e.target.closest('.folder-title')) {
+        // You can add a beep sound here if needed
+        console.log('🔊 Click!');
+      }
+    });
+    
+    // Add keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        if (e.target.closest('.folder-title')) {
+          e.target.closest('details').toggleAttribute('open');
+        }
+      }
+    });
+  </script>
+</body>
+</html>`
+
+          const htmlString =
+            header + bookmarksToHTML(bookmarkTreeNodes) + footer
+          const blob = new Blob([htmlString], {
+            type: "text/html; charset=utf-8",
+          })
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement("a")
+          link.href = url
+          link.download = `pixel_bookmarks_${
+            new Date().toISOString().split("T")[0]
+          }.html`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+        }
+        settingsMenu.classList.add("hidden")
+      })
+    }
   })
 
   // Xử lý import bookmarks
@@ -527,7 +1096,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return
           }
 
-          // Lấy danh sách bookmark hiện tại
           safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
             if (!bookmarkTreeNodes) {
               const language = localStorage.getItem("appLanguage") || "en"
@@ -538,7 +1106,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const existingBookmarks = flattenBookmarks(bookmarkTreeNodes)
             const existingUrls = new Set(existingBookmarks.map((b) => b.url))
 
-            // Kiểm tra bookmark trùng lặp
             const bookmarksToImport = []
             const duplicateBookmarks = []
             const flattenImportedBookmarks = flattenBookmarks(data.bookmarks)
@@ -582,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "create",
           [
             {
-              parentId: bookmark.parentId || "2", // Thư mục "Other Bookmarks" mặc định
+              parentId: bookmark.parentId || "2",
               title: bookmark.title || "",
               url: bookmark.url,
             },
@@ -828,6 +1395,7 @@ document.addEventListener("DOMContentLoaded", () => {
             addToFolderButton.classList.add("hidden")
             toggleDeleteFolderButton()
             saveUIState()
+            alert(translations[language].addToFolderSuccess) // Thông báo thành công
           }
           addToFolderPopup.classList.add("hidden")
         })
@@ -1037,6 +1605,60 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
+  function createBookmarkElement(bookmark) {
+    const language = localStorage.getItem("appLanguage") || "en"
+    console.log("Rendering bookmark:", bookmark.id, bookmark.title)
+    const div = document.createElement("div")
+    div.className = "bookmark-item"
+    let favicon
+    try {
+      favicon = `https://www.google.com/s2/favicons?sz=32&domain=${
+        new URL(bookmark.url).hostname
+      }`
+    } catch (error) {
+      favicon = "./images/default-favicon.png" // Favicon mặc định nếu URL không hợp lệ
+    }
+    div.innerHTML = `
+      <input type="checkbox" class="bookmark-checkbox" data-id="${
+        bookmark.id
+      }" ${
+      selectedBookmarks.has(bookmark.id) ? "checked" : ""
+    } style="display: ${checkboxesVisible ? "inline-block" : "none"}">
+      <img src="${favicon}" alt="favicon" class="favicon">
+      <a href="${bookmark.url}" target="_blank" class="link">${
+      bookmark.title || bookmark.url
+    }</a>
+      <div class="dropdown-btn-group">
+        <button class="dropdown-btn" aria-label="Bookmark options">⋮</button>
+        <div class="dropdown-menu hidden">
+          <button class="menu-item add-to-folder" data-id="${bookmark.id}">${
+      translations[language].addToFolderOption
+    }</button>
+          <button class="menu-item delete-btn" data-id="${bookmark.id}">${
+      translations[language].deleteBookmarkOption
+    }</button>
+          <button class="menu-item rename-btn" data-id="${bookmark.id}">${
+      translations[language].renameBookmarkOption
+    }</button>
+        </div>
+      </div>
+    `
+    // Gắn sự kiện trực tiếp cho nút Add to Folder
+    const addToFolderBtn = div.querySelector(".add-to-folder")
+    addToFolderBtn.addEventListener("click", () => {
+      selectedBookmarks.clear()
+      selectedBookmarks.add(bookmark.id)
+      populateAddToFolderSelect()
+      newFolderInput.value = ""
+      newFolderInput.classList.remove("error")
+      const lang = localStorage.getItem("appLanguage") || "en"
+      newFolderInput.placeholder = translations[lang].newFolderPlaceholder
+      addToFolderPopup.classList.remove("hidden")
+      addToFolderSelect.focus()
+    })
+    return div
+  }
+
   function attachDropdownListeners() {
     document.querySelectorAll(".dropdown-btn").forEach((button) => {
       button.removeEventListener("click", handleDropdownClick)
@@ -1130,6 +1752,7 @@ document.addEventListener("DOMContentLoaded", () => {
               }
               renderFilteredBookmarks(filtered, uiState.sortType)
               saveUIState()
+              alert(translations[language].deleteBookmarkSuccess) // Thông báo xóa thành công
             }
           })
         })
@@ -1145,42 +1768,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       addToFolderButton.classList.toggle("hidden", selectedBookmarks.size === 0)
     }
-  }
-
-  function createBookmarkElement(bookmark) {
-    const language = localStorage.getItem("appLanguage") || "en"
-    console.log("Rendering bookmark:", bookmark.id, bookmark.title)
-    const div = document.createElement("div")
-    div.className = "bookmark-item"
-    const favicon = `https://www.google.com/s2/favicons?sz=32&domain=${
-      new URL(bookmark.url).hostname
-    }`
-    div.innerHTML = `
-      <input type="checkbox" class="bookmark-checkbox" data-id="${
-        bookmark.id
-      }" ${
-      selectedBookmarks.has(bookmark.id) ? "checked" : ""
-    } style="display: ${checkboxesVisible ? "inline-block" : "none"}">
-      <img src="${favicon}" alt="favicon" class="favicon">
-      <a href="${bookmark.url}" target="_blank" class="link">${
-      bookmark.title || bookmark.url
-    }</a>
-      <div class="dropdown-btn-group">
-        <button class="dropdown-btn" aria-label="Bookmark options">⋮</button>
-        <div class="dropdown-menu hidden">
-          <button class="menu-item add-to-folder" data-id="${bookmark.id}">${
-      translations[language].addToFolderOption
-    }</button>
-          <button class="menu-item delete-btn" data-id="${bookmark.id}">${
-      translations[language].deleteBookmarkOption
-    }</button>
-          <button class="menu-item rename-btn" data-id="${bookmark.id}">${
-      translations[language].renameBookmarkOption
-    }</button>
-        </div>
-      </div>
-    `
-    return div
   }
 
   function renderAllBookmarks(bookmarksList) {
