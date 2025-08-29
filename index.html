@@ -26,6 +26,7 @@
             </select>
             <button id="create-folder" class="button create">Create Folder</button>
             <button id="add-to-folder" class="button add hidden">Add to Folder</button>
+            <button id="rename-folder" class="button rename-folder hidden">Rename Folder</button>
             <button id="delete-folder" class="button delete-folder hidden">Delete Folder</button>
             <div class="settings-container">
                 <button id="settings-button" class="button settings" title="button setting">⋮</button>
@@ -44,6 +45,7 @@
                         <option value="normal">Font: Normal</option>
                     </select>
                     <button id="export-bookmarks-option" class="menu-item">Export Bookmarks</button>
+                    <button id="import-bookmarks-option" class="menu-item">Import Bookmarks</button>
                 </div>
             </div>
         </div>
@@ -74,8 +76,21 @@
                 </div>
             </div>
         </div>
-
-        <!-- popup content -->
+        <div id="rename-folder-popup" class="rename-popup hidden" role="dialog" aria-labelledby="rename-folder-title">
+            <div class="rename-popup-content">
+                <h3 id="rename-folder-title">Rename Folder</h3>
+                <div class="rename-input-container">
+                    <input type="text" id="rename-folder-input" class="input" placeholder="Enter new folder name..."
+                        aria-label="New folder name" maxlength="255">
+                    <button id="clear-rename-folder" class="button clear"
+                        aria-label="Clear rename folder input">✖</button>
+                </div>
+                <div class="rename-popup-buttons">
+                    <button id="rename-folder-save" class="button save">Save</button>
+                    <button id="rename-folder-cancel" class="button cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
         <div id="add-to-folder-popup" class="rename-popup hidden" role="dialog" aria-labelledby="add-to-folder-title">
             <div class="rename-popup-content">
                 <h3 id="add-to-folder-title">Add to Folder</h3>
@@ -109,7 +124,6 @@
                 </div>
             </div>
         </div>
-        <!-- index.html -->
         <div id="custom-popup" class="rename-popup hidden" role="dialog" aria-labelledby="custom-popup-title">
             <div class="rename-popup-content">
                 <h3 id="custom-popup-title">Notification</h3>
@@ -119,12 +133,10 @@
                 </div>
             </div>
         </div>
-
         <button id="scroll-to-top" class="button scroll-to-top" title="Scroll to Top" aria-label="Scroll to Top">
             <i class="fas fa-caret-up"></i>
         </button>
     </div>
-
     <script src="main.js" type="module"></script>
 </body>
 

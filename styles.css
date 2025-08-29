@@ -203,11 +203,12 @@ body {
 }
 
 /* Button variants */
+.button.rename-folder,
 .button.create {
   background-color: var(--accent-color);
   color: var(--bg-primary);
 }
-
+.button.rename-folder:hover,
 .button.create:hover {
   background-color: var(--text-secondary);
   transform: translateY(-1px);

@@ -69,7 +69,6 @@ export function setupEventListeners(elements) {
     elements.scrollToTopButton.classList.toggle("hidden", window.scrollY <= 0)
   })
 
-  // events.js
   elements.renameSave.addEventListener("click", () => {
     const newTitle = elements.renameInput.value.trim()
     const language = localStorage.getItem("appLanguage") || "en"
@@ -438,30 +437,64 @@ export function setupEventListeners(elements) {
           if (!data.bookmarks || !Array.isArray(data.bookmarks)) {
             const language = localStorage.getItem("appLanguage") || "en"
             showCustomPopup(
-              translations[language].importInvalidFile,
+              translations[language].importInvalidFile || "Invalid file format",
               "error",
               false
             )
             return
           }
+
           safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
             if (!bookmarkTreeNodes) {
               const language = localStorage.getItem("appLanguage") || "en"
               showCustomPopup(
-                translations[language].importError,
+                translations[language].importError ||
+                  "Failed to fetch bookmark tree",
                 "error",
                 false
               )
               return
             }
-            // Rest of the import logic remains unchanged
-            // ...
+
+            const existingBookmarks = flattenBookmarks(bookmarkTreeNodes)
+            const existingUrls = new Set(existingBookmarks.map((b) => b.url))
+
+            const bookmarksToImport = []
+            const duplicateBookmarks = []
+            const flattenImportedBookmarks = flattenBookmarks(data.bookmarks)
+
+            flattenImportedBookmarks.forEach((bookmark) => {
+              if (bookmark.url) {
+                if (existingUrls.has(bookmark.url)) {
+                  duplicateBookmarks.push(bookmark)
+                } else {
+                  bookmarksToImport.push(bookmark)
+                }
+              }
+            })
+
+            const language = localStorage.getItem("appLanguage") || "en"
+
+            if (duplicateBookmarks.length > 0) {
+              const language = localStorage.getItem("appLanguage") || "en"
+              showCustomPopup(
+                `${
+                  translations[language].importDuplicatePrompt ||
+                  "Duplicate bookmarks found"
+                }: ${duplicateBookmarks.length}`,
+                "warning",
+                true, // cho hiện confirm
+                () => importNonDuplicateBookmarks(bookmarksToImport) // chỉ chạy khi bấm OK
+              )
+            } else {
+              importNonDuplicateBookmarks(bookmarksToImport)
+            }
           })
         } catch (error) {
           console.error("Error parsing import file:", error)
           const language = localStorage.getItem("appLanguage") || "en"
           showCustomPopup(
-            translations[language].importInvalidFile,
+            translations[language].importInvalidFile || "Invalid file format",
             "error",
             false
           )
@@ -470,10 +503,11 @@ export function setupEventListeners(elements) {
       reader.readAsText(file)
     })
     input.click()
-    elements.settingsMenu.classList.add("hidden")
+    settingsMenu.classList.add("hidden")
   })
 
-  function importNonDuplicateBookmarks(bookmarksToImport, elements) {
+  // Hàm nhập các bookmark không trùng lặp
+  function importNonDuplicateBookmarks(bookmarksToImport) {
     const language = localStorage.getItem("appLanguage") || "en"
     const importPromises = bookmarksToImport.map((bookmark) => {
       return new Promise((resolve) => {
@@ -492,12 +526,40 @@ export function setupEventListeners(elements) {
     })
 
     Promise.all(importPromises).then(() => {
-      getBookmarkTree((bookmarkTreeNodes) => {
+      safeChromeBookmarksCall("getTree", [], (bookmarkTreeNodes) => {
         if (bookmarkTreeNodes) {
-          renderFilteredBookmarks(bookmarkTreeNodes, elements)
-          showCustomPopup(translations[language].importSuccess, "success")
+          bookmarkTree = bookmarkTreeNodes
+          bookmarks = flattenBookmarks(bookmarkTreeNodes)
+          folders = getFolders(bookmarkTreeNodes)
+          populateFolderFilter(folders)
+          updateBookmarkCount()
+          let filtered = bookmarks
+          if (uiState.selectedFolderId) {
+            filtered = filtered.filter((bookmark) =>
+              isInFolder(bookmark, uiState.selectedFolderId)
+            )
+          }
+          if (uiState.searchQuery) {
+            filtered = filtered.filter(
+              (bookmark) =>
+                bookmark.title?.toLowerCase().includes(uiState.searchQuery) ||
+                bookmark.url?.toLowerCase().includes(uiState.searchQuery)
+            )
+          }
+          renderFilteredBookmarks(filtered, uiState.sortType)
+          toggleDeleteFolderButton()
+          saveUIState()
+          showCustomPopup(
+            translations[language].importSuccess ||
+              "Bookmarks imported successfully!",
+            "success"
+          )
         } else {
-          showCustomPopup(translations[language].importError, "error", false)
+          showCustomPopup(
+            translations[language].importError || "Failed to update bookmarks",
+            "error",
+            false
+          )
         }
       })
     })
@@ -639,24 +701,168 @@ export function setupEventListeners(elements) {
     )
   })
 
-  elements.addToFolderCancelButton.addEventListener("click", () => {
+  elements.addToFolderSaveButton.addEventListener("click", () => {
+    const targetFolderId = elements.addToFolderSelect.value
+    const newFolderName = elements.newFolderInput.value.trim()
+    const language = localStorage.getItem("appLanguage") || "en"
+    console.log(
+      "add-to-folder-save clicked, targetFolderId:",
+      targetFolderId,
+      "newFolderName:",
+      newFolderName,
+      "selectedBookmarks:",
+      Array.from(selectedBookmarks)
+    )
+
+    if (!targetFolderId && !newFolderName) {
+      console.log("No folder selected or new folder name entered")
+      elements.newFolderInput.classList.add("error")
+      elements.newFolderInput.placeholder =
+        translations[language].emptyFolderError
+      elements.newFolderInput.focus()
+      return
+    }
+
+    if (selectedBookmarks.size === 0) {
+      console.log("No bookmarks selected")
+      showCustomPopup(
+        translations[language].noBookmarksSelected,
+        "error",
+        false
+      )
+      elements.addToFolderPopup.classList.add("hidden")
+      return
+    }
+    if (newFolderName) {
+      // Create a new folder
+      safeChromeBookmarksCall(
+        "create",
+        [{ parentId: "2", title: newFolderName }],
+        (newFolder) => {
+          if (newFolder) {
+            console.log("New folder created:", newFolder)
+            getBookmarkTree((bookmarkTreeNodes) => {
+              if (bookmarkTreeNodes) {
+                uiState.bookmarkTree = bookmarkTreeNodes
+                uiState.folders = getFolders(bookmarkTreeNodes)
+                populateAddToFolderSelect(elements)
+                elements.addToFolderSelect.value = newFolder.id
+                moveBookmarksToFolder(
+                  Array.from(selectedBookmarks),
+                  newFolder.id,
+                  elements,
+                  () => {
+                    elements.addToFolderPopup.classList.add("hidden")
+                    elements.newFolderInput.value = ""
+                    elements.newFolderInput.classList.remove("error")
+                    elements.newFolderInput.placeholder =
+                      translations[language].newFolderPlaceholder
+                    showCustomPopup(
+                      translations[language].addToFolderSuccess,
+                      "success"
+                    )
+                  }
+                )
+              } else {
+                console.error(
+                  "Failed to fetch bookmark tree after creating folder"
+                )
+                showCustomPopup(
+                  translations[language].errorUnexpected,
+                  "error",
+                  false
+                )
+              }
+            })
+          } else {
+            console.error("Failed to create new folder")
+            showCustomPopup(
+              translations[language].errorUnexpected,
+              "error",
+              false
+            )
+          }
+        }
+      )
+    } else {
+      // Move to existing folder
+      moveBookmarksToFolder(
+        Array.from(selectedBookmarks),
+        targetFolderId,
+        elements,
+        () => {
+          elements.addToFolderPopup.classList.add("hidden")
+          elements.newFolderInput.value = ""
+          elements.newFolderInput.classList.remove("error")
+          elements.newFolderInput.placeholder =
+            translations[language].newFolderPlaceholder
+          showCustomPopup(translations[language].addToFolderSuccess, "success")
+        }
+      )
+    }
+  })
+
+  elements.addToFolderCancel.addEventListener("click", () => {
+    elements.addToFolderPopup.classList.add("hidden")
+    elements.newFolderInput.classList.remove("error")
+    elements.newFolderInput.value = ""
+    const language = localStorage.getItem("appLanguage") || "en"
+    elements.newFolderInput.placeholder =
+      translations[language].newFolderPlaceholder
+  })
+
+  elements.createNewFolder.addEventListener("click", () => {
     const folderName = elements.newFolderInput.value.trim()
     const language = localStorage.getItem("appLanguage") || "en"
-    if (folderName && !uiState.folders.some((f) => f.title === folderName)) {
-      if (confirm(translations[language].discardFolderPrompt)) {
-        elements.addToFolderPopup.classList.add("hidden")
-        elements.newFolderInput.value = ""
-        elements.newFolderInput.classList.remove("error")
-        elements.newFolderInput.placeholder =
-          translations[language].newFolderPlaceholder
-      }
-    } else {
-      elements.addToFolderPopup.classList.add("hidden")
-      elements.newFolderInput.value = ""
-      elements.newFolderInput.classList.remove("error")
+    console.log("create-new-folder clicked, folderName:", folderName)
+    if (!folderName) {
+      elements.newFolderInput.classList.add("error")
       elements.newFolderInput.placeholder =
-        translations[language].newFolderPlaceholder
+        translations[language].emptyFolderError
+      elements.newFolderInput.focus()
+      return
     }
+    safeChromeBookmarksCall(
+      "create",
+      [{ parentId: "2", title: folderName }],
+      (newFolder) => {
+        if (newFolder) {
+          console.log("New folder created:", newFolder)
+          getBookmarkTree((bookmarkTreeNodes) => {
+            if (bookmarkTreeNodes) {
+              uiState.bookmarkTree = bookmarkTreeNodes
+              uiState.folders = getFolders(bookmarkTreeNodes)
+              populateAddToFolderSelect(elements)
+              elements.addToFolderSelect.value = newFolder.id
+              elements.newFolderInput.value = ""
+              elements.newFolderInput.classList.remove("error")
+              elements.newFolderInput.placeholder =
+                translations[language].newFolderPlaceholder
+              showCustomPopup(
+                translations[language].createFolderSuccess,
+                "success"
+              )
+            } else {
+              console.error(
+                "Failed to fetch bookmark tree after creating folder"
+              )
+              showCustomPopup(
+                translations[language].errorUnexpected,
+                "error",
+                false
+              )
+            }
+          })
+        } else {
+          console.error("Failed to create new folder")
+          showCustomPopup(
+            translations[language].errorUnexpected,
+            "error",
+            false
+          )
+        }
+      }
+    )
   })
 
   elements.addToFolderPopup.addEventListener("click", (e) => {
@@ -823,10 +1029,9 @@ export function setupEventListeners(elements) {
     return null
   }
 
-  attachDropdownListeners(elements) // Initial attachment
+  attachDropdownListeners(elements)
 }
 
-// events.js
 export function attachDropdownListeners(elements) {
   console.log("Attaching dropdown listeners")
   const dropdownButtons = document.querySelectorAll(".dropdown-btn")

@@ -2,7 +2,6 @@
 import {
   translations,
   safeChromeBookmarksCall,
-  debounce,
   showCustomPopup,
 } from "./utils.js"
 import {

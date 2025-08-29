@@ -60,7 +60,19 @@ export const translations = {
     errorTitle: "Error",
     confirmTitle: "Confirm",
     renameSuccess: "Bookmark renamed successfully!",
+    deleteBookmarkSuccess: "Bookmark deleted successfully!",
+    addToFolderSuccess: "Bookmark(s) added to folder successfully!",
     createFolderSuccess: "Folder created successfully!",
+    duplicateTitleError: "Title already exists in this folder",
+    emptyTitleError: "Please enter a title",
+    emptyFolderError: "Please enter a folder name or select a folder",
+    noBookmarksSelected: "No bookmarks selected",
+    selectFolderError: "Please select a folder",
+    errorUnexpected: "An unexpected error occurred",
+    deleteConfirm: "Are you sure you want to delete this bookmark?",
+    renamePlaceholder: "Enter new bookmark name",
+    newFolderPlaceholder: "Enter folder name",
+    selectFolder: "Select Folder",
   },
   vi: {
     allBookmarks: "Tất cả Dấu trang",
@@ -106,7 +118,7 @@ export const translations = {
     addToFolderOption: "Thêm vào Thư mục",
     deleteBookmarkOption: "Xóa",
     renameBookmarkOption: "Đổi tên",
-    importSuccess: "Dấu trang đã được nhập thành công!",
+    importSuccess: "Bookmark đã được nhập thành công!",
     importDuplicatePrompt:
       "Một số dấu trang đã tồn tại (cùng URL). Bạn có muốn nhập các dấu trang không trùng lặp không?",
     importInvalidFile:
@@ -121,7 +133,19 @@ export const translations = {
     errorTitle: "Lỗi",
     confirmTitle: "Xác nhận",
     renameSuccess: "Dấu trang được đổi tên thành công!",
+    deleteBookmarkSuccess: "Dấu trang đã được xóa thành công!",
+    addToFolderSuccess: "Dấu trang được thêm vào thư mục thành công!",
     createFolderSuccess: "Thư mục được tạo thành công!",
+    duplicateTitleError: "Tiêu đề đã tồn tại trong thư mục này",
+    emptyTitleError: "Vui lòng nhập tiêu đề",
+    emptyFolderError: "Vui lòng nhập tên thư mục hoặc chọn một thư mục",
+    noBookmarksSelected: "Không có dấu trang nào được chọn",
+    selectFolderError: "Vui lòng chọn một thư mục",
+    errorUnexpected: "Đã xảy ra lỗi không mong muốn",
+    deleteConfirm: "Bạn có chắc chắn muốn xóa dấu trang này không?",
+    renamePlaceholder: "Nhập tên dấu trang mới",
+    newFolderPlaceholder: "Nhập tên thư mục",
+    selectFolder: "Chọn Thư mục",
   },
 }
 
@@ -155,13 +179,21 @@ export function debounce(func, wait) {
 
 // code new
 // utils.js
-export function showCustomPopup(message, type = "success", autoClose = true) {
+export function showCustomPopup(
+  message,
+  type = "success",
+  autoClose = true,
+  onConfirm = null,
+  showCancel = false
+) {
   const popup = document.getElementById("custom-popup")
   const title = document.getElementById("custom-popup-title")
   const messageEl = document.getElementById("custom-popup-message")
   const okButton = document.getElementById("custom-popup-ok")
+  const cancelButton = document.getElementById("custom-popup-cancel") // nhớ thêm trong HTML
   const language = localStorage.getItem("appLanguage") || "en"
 
+  console.log(`showCustomPopup called: type=${type}, message=${message}`)
   title.textContent =
     type === "success"
       ? translations[language].successTitle
@@ -177,7 +209,20 @@ export function showCustomPopup(message, type = "success", autoClose = true) {
     popup.classList.add("hidden")
     document.removeEventListener("keydown", handleKeydown)
   }
-  okButton.onclick = closePopup
+
+  okButton.onclick = () => {
+    closePopup()
+    if (onConfirm) onConfirm() // gọi callback nếu có
+  }
+
+  if (cancelButton) {
+    if (showCancel) {
+      cancelButton.classList.remove("hidden")
+      cancelButton.onclick = () => closePopup()
+    } else {
+      cancelButton.classList.add("hidden")
+    }
+  }
 
   popup.onclick = (e) => {
     if (e.target === popup) {
@@ -186,13 +231,15 @@ export function showCustomPopup(message, type = "success", autoClose = true) {
   }
 
   const handleKeydown = (e) => {
-    if (e.key === "Enter" || e.key === "Escape") {
+    if (e.key === "Enter") {
+      okButton.click()
+    } else if (e.key === "Escape") {
       closePopup()
     }
   }
   document.addEventListener("keydown", handleKeydown)
 
-  if (type === "success" && autoClose) {
+  if (type === "success" && autoClose && !onConfirm) {
     setTimeout(closePopup, 3000)
   }
 }

@@ -1,4 +1,7 @@
 export let uiState = {
+  bookmarkTree: [],
+  folders: [],
+  checkboxesVisible: false,
   searchQuery: "",
   selectedFolderId: "",
   sortType: "default",
@@ -8,8 +11,8 @@ export let uiState = {
   bookmarkTree: [],
 }
 
-export const selectedBookmarks = new Set()
 export let currentBookmarkId = null
+export const selectedBookmarks = new Set()
 
 export function setBookmarks(bookmarks) {
   uiState.bookmarks = bookmarks
