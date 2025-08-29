@@ -1,39 +1,49 @@
-name: CI
+name: Build and Deploy Extension
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches:
+      - main # Trigger on pushes to the main branch
 
 jobs:
-  lint-and-validate:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Install dependencies (if any)
+        run: npm install # Or yarn install, if you use a package manager
+
+      - name: Build extension (if needed)
+        # For simple HTML/CSS/JS extensions, this might involve minification or bundling.
+        # If your extension is just static files, you might skip this step.
+        run: npm run build # Example for a build script
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          node-version: 20
+          name: extension-package
+          path: dist/ # Or the path to your packaged extension files
 
-      - name: Install tools
-        run: npm ci
+  deploy:
+    needs: build # This job depends on the 'build' job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-package
 
-      - name: Validate manifest.json
-        run: node validate-manifest.js
-
-      - name: Check JS syntax
-        run: |
-          for file in $(find . -type f -name "*.js"); do
-            echo "Checking $file"
-            node --check "$file"
-          done
-
-      - name: Lint CSS
-        run: npx stylelint "**/*.css" || true
-
-      - name: Lint HTML
-        run: npx htmlhint "**/*.html" || true
+      - name: Deploy to Chrome Web Store (example)
+        # This step would use a third-party action or custom script
+        # to publish your extension to a marketplace.
+        # Example using a hypothetical action:
+        # uses: my-org/chrome-web-store-deploy-action@v1
+        # with:
+        #   client_id: ${{ secrets.CHROME_WEB_STORE_CLIENT_ID }}
+        #   client_secret: ${{ secrets.CHROME_WEB_STORE_CLIENT_SECRET }}
+        #   refresh_token: ${{ secrets.CHROME_WEB_STORE_REFRESH_TOKEN }}
+        #   extension_id: YOUR_EXTENSION_ID
+        #   zip_path: extension-package/your-extension.zip
+        run: echo "Deployment step goes here"
