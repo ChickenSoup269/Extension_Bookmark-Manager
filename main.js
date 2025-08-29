@@ -40,6 +40,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renameInput: document.getElementById("rename-input"),
     renameSave: document.getElementById("rename-save"),
     renameCancel: document.getElementById("rename-cancel"),
+    customPopup: document.getElementById("custom-popup"),
+    customPopupTitle: document.getElementById("custom-popup-title"),
+    customPopupMessage: document.getElementById("custom-popup-message"),
+    customPopupOk: document.getElementById("custom-popup-ok"),
   }
 
   // Khởi tạo ứng dụng

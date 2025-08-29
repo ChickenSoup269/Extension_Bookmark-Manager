@@ -1,4 +1,10 @@
-import { safeChromeBookmarksCall } from "./utils.js"
+// bookmarks.js and events.js
+import {
+  translations,
+  safeChromeBookmarksCall,
+  debounce,
+  showCustomPopup,
+} from "./utils.js"
 import {
   setBookmarks,
   setFolders,
@@ -90,7 +96,7 @@ export function moveBookmarksToFolder(
         .map((r) => r.reason)
       if (errors.length > 0) {
         console.error("Errors during bookmark move:", errors)
-        alert(translations[language].errorUnexpected)
+        showCustomPopup(translations[language].errorUnexpected, "error", false)
       } else {
         console.log("All bookmarks moved successfully.")
         getBookmarkTree((bookmarkTreeNodes) => {
@@ -98,10 +104,17 @@ export function moveBookmarksToFolder(
             renderFilteredBookmarks(bookmarkTreeNodes, elements)
             selectedBookmarks.clear()
             elements.addToFolderButton.classList.add("hidden")
-            alert(translations[language].addToFolderSuccess)
+            showCustomPopup(
+              translations[language].addToFolderSuccess,
+              "success"
+            )
           } else {
             console.error("Failed to fetch bookmark tree after move.")
-            alert(translations[language].errorUnexpected)
+            showCustomPopup(
+              translations[language].errorUnexpected,
+              "error",
+              false
+            )
           }
           callback()
         })
@@ -109,7 +122,7 @@ export function moveBookmarksToFolder(
     })
     .catch((error) => {
       console.error("Unexpected error in movePromises:", error)
-      alert(translations[language].errorUnexpected)
+      showCustomPopup(translations[language].errorUnexpected, "error", false)
       callback()
     })
 }

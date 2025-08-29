@@ -37,7 +37,6 @@ export function updateUILanguage(elements, language) {
     t.addToFolderTitle
   elements.addToFolderSelect.querySelector('option[value=""]').textContent =
     t.selectFolder
-  elements.newFolderInput.placeholder = t.newFolderPlaceholder
   elements.createNewFolderButton.textContent = t.createNewFolder
   elements.addToFolderSaveButton.textContent = t.save
   elements.addToFolderCancelButton.textContent = t.cancel
@@ -66,10 +65,12 @@ export function updateTheme(elements, theme) {
   elements.folderListDiv.classList.toggle("dark-theme", isDarkMode)
   elements.bookmarkCountDiv.classList.toggle("light-theme", !isDarkMode)
   elements.bookmarkCountDiv.classList.toggle("dark-theme", isDarkMode)
-  document.querySelectorAll(".input, .select, .button").forEach((el) => {
-    el.classList.toggle("light-theme", !isDarkMode)
-    el.classList.toggle("dark-theme", isDarkMode)
-  })
+  document
+    .querySelectorAll(".input, .select, .button, .rename-popup")
+    .forEach((el) => {
+      el.classList.toggle("light-theme", !isDarkMode)
+      el.classList.toggle("dark-theme", isDarkMode)
+    })
 }
 
 export function restoreUIState(elements, callback) {

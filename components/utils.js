@@ -54,6 +54,13 @@ export const translations = {
     deleteBookmarkSuccess: "Bookmark deleted successfully!",
     exportPrompt:
       "Choose export format: JSON or HTML (data will be saved as JSON).",
+    createFolderSuccess: "Folder created successfully!",
+    confirmTitle: "Confirm",
+    successTitle: "Success",
+    errorTitle: "Error",
+    confirmTitle: "Confirm",
+    renameSuccess: "Bookmark renamed successfully!",
+    createFolderSuccess: "Folder created successfully!",
   },
   vi: {
     allBookmarks: "Tất cả Dấu trang",
@@ -109,6 +116,12 @@ export const translations = {
     deleteBookmarkSuccess: "Dấu trang đã được xóa thành công!",
     exportPrompt:
       "Chọn định dạng xuất: JSON hoặc HTML (dữ liệu sẽ được lưu dưới dạng JSON).",
+    createFolderSuccess: "Thư mục được tạo thành công!",
+    successTitle: "Thành công",
+    errorTitle: "Lỗi",
+    confirmTitle: "Xác nhận",
+    renameSuccess: "Dấu trang được đổi tên thành công!",
+    createFolderSuccess: "Thư mục được tạo thành công!",
   },
 }
 
@@ -138,4 +151,104 @@ export function debounce(func, wait) {
     clearTimeout(timeout)
     timeout = setTimeout(() => func.apply(this, args), wait)
   }
+}
+
+// code new
+// utils.js
+export function showCustomPopup(message, type = "success", autoClose = true) {
+  const popup = document.getElementById("custom-popup")
+  const title = document.getElementById("custom-popup-title")
+  const messageEl = document.getElementById("custom-popup-message")
+  const okButton = document.getElementById("custom-popup-ok")
+  const language = localStorage.getItem("appLanguage") || "en"
+
+  title.textContent =
+    type === "success"
+      ? translations[language].successTitle
+      : translations[language].errorTitle
+  messageEl.textContent = message
+  popup.classList.remove("hidden")
+
+  const isDarkMode = document.body.classList.contains("dark-theme")
+  popup.classList.toggle("light-theme", !isDarkMode)
+  popup.classList.toggle("dark-theme", isDarkMode)
+
+  const closePopup = () => {
+    popup.classList.add("hidden")
+    document.removeEventListener("keydown", handleKeydown)
+  }
+  okButton.onclick = closePopup
+
+  popup.onclick = (e) => {
+    if (e.target === popup) {
+      closePopup()
+    }
+  }
+
+  const handleKeydown = (e) => {
+    if (e.key === "Enter" || e.key === "Escape") {
+      closePopup()
+    }
+  }
+  document.addEventListener("keydown", handleKeydown)
+
+  if (type === "success" && autoClose) {
+    setTimeout(closePopup, 3000)
+  }
+}
+
+export function showCustomConfirm(message, onConfirm, onCancel) {
+  const popup = document.getElementById("custom-popup")
+  const title = document.getElementById("custom-popup-title")
+  const messageEl = document.getElementById("custom-popup-message")
+  const okButton = document.getElementById("custom-popup-ok")
+  const language = localStorage.getItem("appLanguage") || "en"
+  const buttonsContainer = popup.querySelector(".rename-popup-buttons")
+
+  title.textContent = translations[language].confirmTitle || "Confirm"
+  messageEl.textContent = message
+  popup.classList.remove("hidden")
+
+  const cancelButton = document.createElement("button")
+  cancelButton.className = "button cancel"
+  cancelButton.textContent = translations[language].cancel || "Cancel"
+  buttonsContainer.appendChild(cancelButton)
+
+  const isDarkMode = document.body.classList.contains("dark-theme")
+  popup.classList.toggle("light-theme", !isDarkMode)
+  popup.classList.toggle("dark-theme", isDarkMode)
+
+  const closePopup = () => {
+    popup.classList.add("hidden")
+    if (buttonsContainer.contains(cancelButton)) {
+      buttonsContainer.removeChild(cancelButton)
+    }
+    document.removeEventListener("keydown", handleKeydown)
+  }
+  okButton.onclick = () => {
+    onConfirm()
+    closePopup()
+  }
+  cancelButton.onclick = () => {
+    if (onCancel) onCancel()
+    closePopup()
+  }
+
+  popup.onclick = (e) => {
+    if (e.target === popup) {
+      if (onCancel) onCancel()
+      closePopup()
+    }
+  }
+
+  const handleKeydown = (e) => {
+    if (e.key === "Enter") {
+      onConfirm()
+      closePopup()
+    } else if (e.key === "Escape") {
+      if (onCancel) onCancel()
+      closePopup()
+    }
+  }
+  document.addEventListener("keydown", handleKeydown)
 }
