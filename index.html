@@ -74,6 +74,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- popup content -->
         <div id="add-to-folder-popup" class="rename-popup hidden" role="dialog" aria-labelledby="add-to-folder-title">
             <div class="rename-popup-content">
                 <h3 id="add-to-folder-title">Add to Folder</h3>
@@ -93,6 +95,21 @@
                 </div>
             </div>
         </div>
+        <div id="create-folder-popup" class="rename-popup hidden" role="dialog" aria-labelledby="create-folder-title">
+            <div class="rename-popup-content">
+                <h3 id="create-folder-title">Create Folder</h3>
+                <div class="rename-input-container">
+                    <input type="text" id="create-folder-input" class="input" placeholder="Enter folder name..."
+                        maxlength="255">
+                    <button id="clear-create-folder" class="button clear">✖</button>
+                </div>
+                <div class="rename-popup-buttons">
+                    <button id="create-folder-save" class="button save">Save</button>
+                    <button id="create-folder-cancel" class="button cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <button id="scroll-to-top" class="button scroll-to-top" title="Scroll to Top" aria-label="Scroll to Top">
             <i class="fas fa-caret-up"></i>
         </button>

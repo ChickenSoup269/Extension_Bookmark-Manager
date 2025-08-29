@@ -752,7 +752,6 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-sm);
-  box-shadow: var(--shadow-sm);
   width: 100%;
 }
 
@@ -783,4 +782,16 @@ body {
 
 #export-bookmarks-option {
   margin-top: 2px;
+}
+
+/* popup content export */
+
+.popup[data-theme="dark"] .popup-content {
+  background: #1e1e1e;
+  color: #fff;
+}
+
+.popup[data-theme="light"] .popup-content {
+  background: #fff;
+  color: #000;
 }
