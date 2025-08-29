@@ -5,12 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-     "lint": "eslint ."
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "ajv": "^8.17.1",
+    "chrome-extension-manifest-json-schema": "^0.2.1",
     "eslint": "^9.34.0"
   }
 }

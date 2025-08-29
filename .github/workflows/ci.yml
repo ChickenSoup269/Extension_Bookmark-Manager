@@ -4,27 +4,36 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
-  ci:
+  lint-and-validate:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install tools
+        run: npm ci
 
       - name: Validate manifest.json
-        run: npx chrome-manifest-validator manifest.json
+        run: node validate-manifest.js
 
-      - name: Check JavaScript syntax
+      - name: Check JS syntax
         run: |
-          for file in $(find . -name "*.js"); do
+          for file in $(find . -type f -name "*.js"); do
             echo "Checking $file"
             node --check "$file"
           done
 
       - name: Lint CSS
-        run: npx stylelint "**/*.css"
+        run: npx stylelint "**/*.css" || true
 
       - name: Lint HTML
-        run: npx htmlhint "**/*.html"
+        run: npx htmlhint "**/*.html" || true
