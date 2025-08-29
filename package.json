@@ -1,0 +1,16 @@
+{
+  "name": "bookmark2.0",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">\r <img src=\"./images/logo.png\" alt=\"logo\" width=\"full\">\r </div>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+     "lint": "eslint ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^9.34.0"
+  }
+}
