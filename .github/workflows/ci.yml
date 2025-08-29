@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Validate manifest.json
+        run: npx chrome-manifest-validator manifest.json
+
+      - name: Check JavaScript syntax
+        run: |
+          for file in $(find . -name "*.js"); do
+            echo "Checking $file"
+            node --check "$file"
+          done
+
+      - name: Lint CSS
+        run: npx stylelint "**/*.css"
+
+      - name: Lint HTML
+        run: npx htmlhint "**/*.html"
