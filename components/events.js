@@ -22,6 +22,136 @@ import {
 } from "./state.js"
 
 export function setupEventListeners(elements) {
+  // Nút mở popup
+  elements.createFolderBtn.addEventListener("click", () => {
+    const language = localStorage.getItem("appLanguage") || "en"
+    elements.createFolderInput.value = ""
+    elements.createFolderInput.classList.remove("error")
+    elements.createFolderInput.placeholder =
+      translations[language].newFolderPlaceholder
+    elements.createFolderPopup.classList.remove("hidden")
+    elements.createFolderInput.focus()
+  })
+
+  // Nút Save
+  elements.createFolderSave.addEventListener("click", () => {
+    const folderName = elements.createFolderInput.value.trim()
+    const language = localStorage.getItem("appLanguage") || "en"
+
+    if (!folderName) {
+      elements.createFolderInput.classList.add("error")
+      elements.createFolderInput.placeholder =
+        translations[language].emptyFolderError
+      elements.createFolderInput.focus()
+      return
+    }
+
+    // Check duplicate trong folder gốc (id: "2")
+    safeChromeBookmarksCall("getChildren", ["2"], (siblings) => {
+      if (siblings) {
+        const isDuplicate = siblings.some(
+          (sibling) => sibling.title.toLowerCase() === folderName.toLowerCase()
+        )
+        if (isDuplicate) {
+          elements.createFolderInput.classList.add("error")
+          elements.createFolderInput.placeholder =
+            translations[language].duplicateTitleError
+          elements.createFolderInput.focus()
+          return
+        }
+
+        // Tạo folder mới
+        safeChromeBookmarksCall(
+          "create",
+          [{ parentId: "2", title: folderName }],
+          (newFolder) => {
+            if (newFolder) {
+              getBookmarkTree((bookmarkTreeNodes) => {
+                if (bookmarkTreeNodes) {
+                  // Cập nhật UI
+                  uiState.bookmarkTree = bookmarkTreeNodes
+                  uiState.folders = getFolders(bookmarkTreeNodes)
+                  uiState.selectedFolderId = newFolder.id
+                  renderFilteredBookmarks(bookmarkTreeNodes, elements)
+
+                  // ✅ Thông báo thành công
+                  showCustomPopup(
+                    translations[language].createFolderSuccess,
+                    "success",
+                    true
+                  )
+
+                  // Reset input
+                  elements.createFolderInput.value = ""
+                  elements.createFolderInput.classList.remove("error")
+                  elements.createFolderInput.placeholder =
+                    translations[language].newFolderPlaceholder
+
+                  // Đóng popup
+                  elements.createFolderPopup.classList.add("hidden")
+
+                  saveUIState()
+                } else {
+                  showCustomPopup(
+                    translations[language].errorUnexpected,
+                    "error",
+                    false
+                  )
+                }
+              })
+            } else {
+              showCustomPopup(
+                translations[language].errorUnexpected,
+                "error",
+                false
+              )
+            }
+          }
+        )
+      } else {
+        showCustomPopup(translations[language].errorUnexpected, "error", false)
+      }
+    })
+  })
+
+  // Nút Cancel
+  elements.createFolderCancel.addEventListener("click", () => {
+    elements.createFolderPopup.classList.add("hidden")
+    elements.createFolderInput.classList.remove("error")
+    elements.createFolderInput.value = ""
+    const language = localStorage.getItem("appLanguage") || "en"
+    elements.createFolderInput.placeholder =
+      translations[language].newFolderPlaceholder
+  })
+
+  // Clear Create Folder Input
+  elements.clearCreateFolder.addEventListener("click", () => {
+    elements.createFolderInput.value = ""
+    elements.createFolderInput.classList.remove("error")
+    const language = localStorage.getItem("appLanguage") || "en"
+    elements.createFolderInput.placeholder =
+      translations[language].newFolderPlaceholder
+    elements.createFolderInput.focus()
+  })
+
+  // Enter = Save, Escape = Cancel
+  elements.createFolderInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      elements.createFolderSave.click()
+    }
+  })
+  elements.createFolderInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      elements.createFolderCancel.click()
+    }
+  })
+
+  // Click ngoài popup = đóng
+  elements.createFolderPopup.addEventListener("click", (e) => {
+    if (e.target === elements.createFolderPopup) {
+      elements.createFolderCancel.click()
+    }
+  })
   // Rename Folder Button
   elements.renameFolderButton.addEventListener("click", () => {
     const language = localStorage.getItem("appLanguage") || "en"
@@ -185,6 +315,8 @@ export function setupEventListeners(elements) {
       elements.renameFolderCancel.click()
     }
   })
+
+  //  --------------------------------------
 
   elements.languageSwitcher.addEventListener("change", (e) => {
     updateUILanguage(elements, e.target.value)
@@ -1356,72 +1488,3 @@ function populateAddToFolderSelect(elements) {
     elements.addToFolderSelect.appendChild(option)
   })
 }
-//  chuẩn bị tách code add folder button lớn
-const createFolderBtn = document.getElementById("create-folder")
-const createFolderPopup = document.getElementById("create-folder-popup")
-const createFolderInput = document.getElementById("create-folder-input")
-const createFolderSave = document.getElementById("create-folder-save")
-const createFolderCancel = document.getElementById("create-folder-cancel")
-const clearCreateFolder = document.getElementById("clear-create-folder")
-
-function openCreateFolderPopup(placeholder) {
-  createFolderInput.value = ""
-  createFolderInput.placeholder = placeholder
-  createFolderPopup.classList.remove("hidden")
-  createFolderInput.focus()
-}
-
-function closeCreateFolderPopup() {
-  createFolderPopup.classList.add("hidden")
-}
-
-// Nút mở popup
-createFolderBtn.addEventListener("click", () => {
-  const language = localStorage.getItem("appLanguage") || "en"
-  openCreateFolderPopup(translations[language].newFolderPlaceholder)
-})
-
-// Nút Save
-createFolderSave.addEventListener("click", () => {
-  const folderName = createFolderInput.value.trim()
-  const language = localStorage.getItem("appLanguage") || "en"
-  if (folderName) {
-    safeChromeBookmarksCall(
-      "create",
-      [{ parentId: "2", title: folderName }],
-      (newFolder) => {
-        if (newFolder) {
-          getBookmarkTree((bookmarkTreeNodes) => {
-            if (bookmarkTreeNodes) {
-              renderFilteredBookmarks(bookmarkTreeNodes, elements)
-              showCustomPopup(
-                translations[language].createFolderSuccess ||
-                  "Folder created successfully!",
-                "success"
-              )
-            }
-          })
-        } else {
-          showCustomPopup(
-            translations[language].errorUnexpected,
-            "error",
-            false
-          )
-        }
-      }
-    )
-  } else {
-    createFolderInput.classList.add("error")
-    createFolderInput.placeholder = translations[language].emptyFolderError
-  }
-  closeCreateFolderPopup()
-})
-
-// Nút Cancel
-createFolderCancel.addEventListener("click", closeCreateFolderPopup)
-
-// Nút Clear input
-clearCreateFolder.addEventListener("click", () => {
-  createFolderInput.value = ""
-  createFolderInput.focus()
-})
