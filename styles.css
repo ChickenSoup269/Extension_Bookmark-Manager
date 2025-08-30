@@ -123,7 +123,7 @@ body {
   position: sticky;
   top: -4px;
   background-color: transparent;
-  z-index: 1000;
+  z-index: 1;
   padding: var(--spacing-xs) 0;
   box-shadow: var(--shadow-sm);
   transition: background-color var(--transition-normal);
@@ -627,7 +627,7 @@ body {
 }
 
 /* Rename Popup */
-.rename-popup {
+/* .rename-popup {
   position: fixed;
   top: 0;
   left: 0;
@@ -639,7 +639,7 @@ body {
   justify-content: center;
   z-index: 2000;
   transition: opacity var(--transition-normal);
-}
+} */
 
 .rename-popup.hidden {
   display: none;
@@ -859,4 +859,156 @@ body {
 .dark-theme .rename-popup-content {
   background: #333;
   color: #fff;
+}
+
+.rename-input-container {
+  display: flex;
+  flex-direction: column; /* 👈 Chuyển thành dọc */
+  gap: 10px; /* Khoảng cách giữa select và input */
+  margin-bottom: 20px;
+}
+
+/* Select */
+.rename-input-container .select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Input */
+.rename-input-container .input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Popup nền mờ */
+.rename-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: opacity 0.3s ease;
+}
+
+.rename-popup.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Khung popup */
+.rename-popup-content {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  animation: fadeInUp 0.3s ease;
+}
+
+/* Tiêu đề */
+.rename-popup-content h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+/* Container input */
+.rename-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+/* Select và Input */
+.rename-input-container .select,
+.rename-input-container .input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.rename-input-container .select:focus,
+.rename-input-container .input:focus {
+  border-color: #4a90e2;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+/* Nút clear */
+#clear-rename-folder {
+  width: 8px;
+  height: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 25px;
+  transition: background 0.2s ease;
+}
+#clear-rename-folder:hover {
+  color: red;
+  transition: 0.2s ease-in-out;
+}
+
+/* Buttons Save/Cancel */
+.rename-popup-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.rename-popup-buttons .button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.15s ease;
+}
+
+.rename-popup-buttons .save {
+  background: #4a90e2;
+  color: #fff;
+}
+.rename-popup-buttons .save:hover {
+  background: #357ab8;
+  transform: scale(1.05);
+}
+
+.rename-popup-buttons .cancel {
+  background: #eee;
+  color: #333;
+}
+.rename-popup-buttons .cancel:hover {
+  background: #ddd;
+  transform: scale(1.05);
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

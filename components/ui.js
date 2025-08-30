@@ -51,6 +51,13 @@ export function updateUILanguage(elements, language) {
   elements.renameInput.dataset.errorPlaceholder = t.emptyTitleError
   elements.newFolderInput.dataset.errorPlaceholder = t.emptyFolderError
   elements.newFolderInput.dataset.selectFolderError = t.selectFolderError
+  elements.renameFolderPopup.querySelector("#rename-folder-title").textContent =
+    t.renameTitle
+  elements.renameFolderSelect.querySelector('option[value=""]').textContent =
+    t.selectFolder
+  elements.renameFolderInput.placeholder = t.renamePlaceholder
+  elements.renameFolderInput.dataset.errorPlaceholder = t.emptyFolderError
+  elements.renameFolderInput.dataset.selectFolderError = t.selectFolderError
   localStorage.setItem("appLanguage", language)
 }
 

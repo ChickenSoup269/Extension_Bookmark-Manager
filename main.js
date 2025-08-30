@@ -45,7 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renameCancel: document.getElementById("rename-cancel"),
     customPopup: document.getElementById("custom-popup"),
     customPopupTitle: document.getElementById("custom-popup-title"),
-
     addToFolderPopup: document.getElementById("add-to-folder-popup"),
     addToFolderSelect: document.getElementById("add-to-folder-select"),
     newFolderInput: document.getElementById("new-folder-input"),
@@ -56,6 +55,13 @@ document.addEventListener("DOMContentLoaded", () => {
     customPopupTitle: document.getElementById("custom-popup-title"),
     customPopupMessage: document.getElementById("custom-popup-message"),
     customPopupOk: document.getElementById("custom-popup-ok"),
+    renameFolderButton: document.getElementById("rename-folder"),
+    renameFolderPopup: document.getElementById("rename-folder-popup"),
+    renameFolderSelect: document.getElementById("rename-folder-select"),
+    renameFolderInput: document.getElementById("rename-folder-input"),
+    renameFolderSave: document.getElementById("rename-folder-save"),
+    renameFolderCancel: document.getElementById("rename-folder-cancel"),
+    clearRenameFolder: document.getElementById("clear-rename-folder"),
   }
 
   // Khởi tạo ứng dụng
