@@ -1,4 +1,3 @@
-// ui.js
 import { translations } from "./utils.js"
 import { flattenBookmarks, getFolders, isInFolder } from "./bookmarks.js"
 import {
@@ -26,6 +25,7 @@ export function updateUILanguage(elements, language) {
   elements.createFolderButton.textContent = t.createFolder
   elements.addToFolderButton.textContent = t.addToFolder
   elements.deleteFolderButton.textContent = t.deleteFolder
+  elements.renameFolderButton.textContent = t.renameFolder // Cập nhật văn bản nút Rename Folder
   elements.exportBookmarksOption.textContent = t.exportBookmarks
   elements.toggleCheckboxesButton.textContent = uiState.checkboxesVisible
     ? t.hideCheckboxes
@@ -141,7 +141,7 @@ export function renderFilteredBookmarks(bookmarkTreeNodes, elements) {
     )
   }
   renderBookmarks(filtered, elements)
-  toggleDeleteFolderButton(elements)
+  toggleFolderButtons(elements) // Cập nhật hàm để kiểm soát cả hai nút
   saveUIState()
 }
 
@@ -171,17 +171,17 @@ function updateBookmarkCount(bookmarks, elements) {
   elements.bookmarkCountDiv.textContent = `${translations[language].totalBookmarks}: ${count}`
 }
 
-function toggleDeleteFolderButton(elements) {
-  elements.deleteFolderButton.classList.toggle(
-    "hidden",
-    !uiState.selectedFolderId ||
-      uiState.selectedFolderId === "1" ||
-      uiState.selectedFolderId === "2"
-  )
+function toggleFolderButtons(elements) {
+  const isUserCreatedFolder =
+    uiState.selectedFolderId &&
+    uiState.selectedFolderId !== "1" &&
+    uiState.selectedFolderId !== "2"
+  elements.deleteFolderButton.classList.toggle("hidden", !isUserCreatedFolder)
+  elements.renameFolderButton.classList.toggle("hidden", !isUserCreatedFolder)
 }
 
 function renderBookmarks(bookmarksList, elements) {
-  console.log("Rendering bookmarks, count:", bookmarksList.length) // Debug log
+  console.log("Rendering bookmarks, count:", bookmarksList.length)
   const language = localStorage.getItem("appLanguage") || "en"
   const fragment = document.createDocumentFragment()
   const selectAllDiv = document.createElement("div")
@@ -209,8 +209,8 @@ function renderBookmarks(bookmarksList, elements) {
   elements.sortFilter.value = uiState.sortType
 
   attachSelectAllListener(elements)
-  attachDropdownListeners(elements) // Re-attach dropdown listeners after rendering
-  console.log("Dropdown listeners attached after render") // Debug log
+  attachDropdownListeners(elements)
+  console.log("Dropdown listeners attached after render")
 }
 
 function sortBookmarks(bookmarksList, sortType) {
@@ -260,7 +260,7 @@ function findParentFolder(bookmarkId, nodes) {
 
 function createBookmarkElement(bookmark) {
   const language = localStorage.getItem("appLanguage") || "en"
-  console.log("Creating bookmark element:", bookmark.id, bookmark.title) // Debug log
+  console.log("Creating bookmark element:", bookmark.id, bookmark.title)
   const div = document.createElement("div")
   div.className = "bookmark-item"
   let favicon

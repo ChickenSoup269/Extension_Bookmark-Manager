@@ -3,35 +3,20 @@ import {
   safeChromeBookmarksCall,
   showCustomPopup,
 } from "../utils.js"
-import { getBookmarkTree, getFolders } from "../bookmarks.js"
+import { getBookmarkTree } from "../bookmarks.js"
 import { renderFilteredBookmarks } from "../ui.js"
 import { uiState, saveUIState } from "../state.js"
 
 export function setupRenameFolderListeners(elements) {
-  // Rename Folder Button
+  // Rename Folder Button (Controls)
   elements.renameFolderButton.addEventListener("click", () => {
-    const language = localStorage.getItem("appLanguage") || "en"
-    if (
-      !uiState.selectedFolderId ||
-      uiState.selectedFolderId === "1" ||
-      uiState.selectedFolderId === "2"
-    ) {
-      showCustomPopup(
-        translations[language].selectFolderError ||
-          "Please select a valid folder to rename",
-        "error",
-        false
-      )
-      return
-    }
-    populateRenameFolderSelect(elements)
-    elements.renameFolderInput.value = ""
-    elements.renameFolderInput.classList.remove("error")
-    elements.renameFolderInput.placeholder =
-      translations[language].renamePlaceholder
-    elements.renameFolderSelect.value = uiState.selectedFolderId
-    elements.renameFolderPopup.classList.remove("hidden")
-    elements.renameFolderSelect.focus()
+    openRenameFolderPopup(elements, uiState.selectedFolderId)
+  })
+
+  // Rename Folder Option (Settings Menu)
+  elements.renameFolderOption.addEventListener("click", () => {
+    openRenameFolderPopup(elements, "")
+    elements.settingsMenu.classList.add("hidden")
   })
 
   // Rename Folder Save
@@ -172,15 +157,25 @@ export function setupRenameFolderListeners(elements) {
   })
 }
 
-function populateRenameFolderSelect(elements) {
+function openRenameFolderPopup(elements, defaultFolderId) {
   const language = localStorage.getItem("appLanguage") || "en"
   elements.renameFolderSelect.innerHTML = `<option value="">${translations[language].selectFolder}</option>`
   uiState.folders.forEach((folder) => {
     if (folder.id !== "1" && folder.id !== "2") {
+      // Chỉ hiển thị thư mục do người dùng tạo
       const option = document.createElement("option")
       option.value = folder.id
       option.textContent = folder.title
       elements.renameFolderSelect.appendChild(option)
     }
   })
+  elements.renameFolderInput.value = ""
+  elements.renameFolderInput.classList.remove("error")
+  elements.renameFolderInput.placeholder =
+    translations[language].renamePlaceholder
+  elements.renameFolderSelect.value = defaultFolderId || ""
+  elements.renameFolderPopup.classList.remove("hidden")
+  elements.renameFolderSelect.focus()
 }
+
+export { openRenameFolderPopup }

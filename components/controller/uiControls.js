@@ -6,6 +6,7 @@ import {
   renderFilteredBookmarks,
 } from "../ui.js"
 import { uiState, saveUIState, selectedBookmarks } from "../state.js"
+import { openRenameFolderPopup } from "./renameFolder.js"
 
 export function setupUIControlListeners(elements) {
   elements.languageSwitcher.addEventListener("change", (e) => {
@@ -137,6 +138,12 @@ export function setupUIControlListeners(elements) {
   elements.settingsButton.addEventListener("click", (e) => {
     e.stopPropagation()
     elements.settingsMenu.classList.toggle("hidden")
+  })
+
+  // Thêm sự kiện cho Rename Folder trong Settings
+  elements.renameFolderOption.addEventListener("click", () => {
+    openRenameFolderPopup(elements, "")
+    elements.settingsMenu.classList.add("hidden")
   })
 
   document.addEventListener("click", (e) => {

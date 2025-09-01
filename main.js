@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     createFolderSave: document.getElementById("create-folder-save"),
     createFolderCancel: document.getElementById("create-folder-cancel"),
     clearCreateFolder: document.getElementById("clear-create-folder"),
+    renameFolderOption: document.getElementById("rename-folder-option"),
   }
 
   // Khởi tạo ứng dụng

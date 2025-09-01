@@ -19,6 +19,7 @@ export const translations = {
     hideCheckboxes: "Hide Checkboxes",
     searchPlaceholder: "Search bookmarks...",
     renameTitle: "Rename",
+    renameFolder: "Rename Folder",
     renamePlaceholder: "Enter new name...",
     addToFolderTitle: "Add to Folder",
     selectFolder: "Select Folder",
@@ -119,6 +120,7 @@ export const translations = {
     addToFolderOption: "Thêm vào Thư mục",
     deleteBookmarkOption: "Xóa",
     renameBookmarkOption: "Đổi tên",
+    renameFolder: "Đổi tên bookmark",
     importSuccess: "Bookmark đã được nhập thành công!",
     importDuplicatePrompt:
       "Một số dấu trang đã tồn tại (cùng URL). Bạn có muốn nhập các dấu trang không trùng lặp không?",
