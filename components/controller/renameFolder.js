@@ -1,3 +1,4 @@
+// ./components/controller/renameFolder.js
 import {
   translations,
   safeChromeBookmarksCall,

@@ -1,4 +1,4 @@
-// sate.js
+// ./components/state.js
 export let uiState = {
   bookmarkTree: [],
   folders: [],

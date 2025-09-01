@@ -1,3 +1,4 @@
+// ./components/controller/deleteFolder.js
 import { translations, safeChromeBookmarksCall } from "../utils.js"
 import { getBookmarkTree, flattenBookmarks } from "../bookmarks.js"
 import { renderFilteredBookmarks } from "../ui.js"

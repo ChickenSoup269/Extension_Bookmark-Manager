@@ -1,4 +1,5 @@
-export function attachDropdownListeners(elements) {
+//
+export function attachDropdownListeners() {
   // Remove existing listeners to prevent duplicates
   const dropdownButtons = document.querySelectorAll(".dropdown-btn")
   dropdownButtons.forEach((button) => {

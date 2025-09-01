@@ -1,3 +1,4 @@
+// ./components/controller/addToFolder.js
 import {
   translations,
   safeChromeBookmarksCall,

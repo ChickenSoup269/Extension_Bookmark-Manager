@@ -1489,6 +1489,8 @@
 //   })
 // }
 
+// ./components/events.js
+
 import { setupCreateFolderListeners } from "./controller/createFolder.js"
 import { setupRenameFolderListeners } from "./controller/renameFolder.js"
 import { setupAddToFolderListeners } from "./controller/addToFolder.js"

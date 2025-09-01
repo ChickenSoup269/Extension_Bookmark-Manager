@@ -1,4 +1,4 @@
-// bookmarks.js
+// ./components/bookmarks.js
 import {
   translations,
   safeChromeBookmarksCall,
