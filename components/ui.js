@@ -40,7 +40,6 @@ export function updateUILanguage(elements, language) {
     t.addToFolderTitle
   elements.addToFolderSelect.querySelector('option[value=""]').textContent =
     t.selectFolder
-  elements.createNewFolderButton.textContent = t.createNewFolder
   elements.addToFolderSaveButton.textContent = t.save
   elements.addToFolderCancelButton.textContent = t.cancel
   elements.bookmarkCountDiv.textContent = `${t.totalBookmarks}: ${
@@ -52,8 +51,6 @@ export function updateUILanguage(elements, language) {
   elements.clearSearchButton.setAttribute("aria-label", t.clearSearchAria)
   elements.settingsButton.setAttribute("aria-label", t.settingsButtonAria)
   elements.renameInput.dataset.errorPlaceholder = t.emptyTitleError
-  elements.newFolderInput.dataset.errorPlaceholder = t.emptyFolderError
-  elements.newFolderInput.dataset.selectFolderError = t.selectFolderError
   elements.renameFolderPopup.querySelector("#rename-folder-title").textContent =
     t.renameTitle
   elements.renameFolderSelect.querySelector('option[value=""]').textContent =

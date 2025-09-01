@@ -9,24 +9,23 @@ import {
   getFolders,
   moveBookmarksToFolder,
 } from "../bookmarks.js"
-import { uiState, saveUIState } from "../state.js"
+import { uiState, saveUIState, selectedBookmarks } from "../state.js"
 
 export function openAddToFolderPopup(elements, bookmarkIds) {
   const language = localStorage.getItem("appLanguage") || "en"
   console.log("openAddToFolderPopup called with bookmarkIds:", bookmarkIds)
   elements.addToFolderSelect.innerHTML = `<option value="">${translations[language].selectFolder}</option>`
   uiState.folders.forEach((folder) => {
-    if (folder.id !== "1" && folder.id !== "2") {
-      const option = document.createElement("option")
-      option.value = folder.id
-      option.textContent = folder.title
-      elements.addToFolderSelect.appendChild(option)
-    }
+    const option = document.createElement("option")
+    option.value = folder.id
+    option.textContent =
+      folder.id === "1"
+        ? translations[language].bookmarksBar || "Bookmarks Bar"
+        : folder.id === "2"
+        ? translations[language].otherBookmarks || "Other Bookmarks"
+        : folder.title || "Unnamed Folder"
+    elements.addToFolderSelect.appendChild(option)
   })
-  elements.newFolderInput.value = ""
-  elements.newFolderInput.classList.remove("error")
-  elements.newFolderInput.placeholder =
-    translations[language].newFolderPlaceholder
   elements.addToFolderPopup.classList.remove("hidden")
   elements.addToFolderSelect.focus()
 
@@ -36,18 +35,6 @@ export function openAddToFolderPopup(elements, bookmarkIds) {
 
   elements.addToFolderCancelButton.removeEventListener("click", handleCancel)
   elements.addToFolderCancelButton.addEventListener("click", handleCancel)
-
-  elements.createNewFolderButton.removeEventListener(
-    "click",
-    handleCreateFolder
-  )
-  elements.createNewFolderButton.addEventListener("click", handleCreateFolder)
-
-  elements.newFolderInput.removeEventListener("keypress", handleKeypress)
-  elements.newFolderInput.addEventListener("keypress", handleKeypress)
-
-  elements.newFolderInput.removeEventListener("keydown", handleKeydown)
-  elements.newFolderInput.addEventListener("keydown", handleKeydown)
 
   elements.addToFolderSelect.removeEventListener(
     "keypress",
@@ -65,12 +52,14 @@ export function openAddToFolderPopup(elements, bookmarkIds) {
 
   function handleSave() {
     const targetFolderId = elements.addToFolderSelect.value
-    const newFolderName = elements.newFolderInput.value.trim()
-    if (!targetFolderId && !newFolderName) {
+    if (!targetFolderId) {
       elements.addToFolderSelect.classList.add("error")
-      elements.newFolderInput.classList.add("error")
-      showCustomPopup(translations[language].selectFolderError, "error", false)
-      elements.newFolderInput.focus()
+      showCustomPopup(
+        translations[language].selectFolderError || "Please select a folder.",
+        "error",
+        false
+      )
+      elements.addToFolderSelect.focus()
       return
     }
 
@@ -85,152 +74,21 @@ export function openAddToFolderPopup(elements, bookmarkIds) {
       return
     }
 
-    if (newFolderName) {
-      safeChromeBookmarksCall(
-        "create",
-        [{ parentId: "2", title: newFolderName }],
-        (newFolder) => {
-          if (newFolder) {
-            getBookmarkTree((bookmarkTreeNodes) => {
-              if (bookmarkTreeNodes) {
-                uiState.bookmarkTree = bookmarkTreeNodes
-                uiState.folders = getFolders(bookmarkTreeNodes)
-                elements.addToFolderSelect.innerHTML = `<option value="">${translations[language].selectFolder}</option>`
-                uiState.folders.forEach((folder) => {
-                  if (folder.id !== "1" && folder.id !== "2") {
-                    const option = document.createElement("option")
-                    option.value = folder.id
-                    option.textContent = folder.title
-                    elements.addToFolderSelect.appendChild(option)
-                  }
-                })
-                elements.addToFolderSelect.value = newFolder.id
-                moveBookmarksToFolder(
-                  bookmarkIds,
-                  newFolder.id,
-                  elements,
-                  () => {
-                    elements.addToFolderPopup.classList.add("hidden")
-                    elements.newFolderInput.value = ""
-                    elements.newFolderInput.classList.remove("error")
-                    elements.addToFolderSelect.classList.remove("error")
-                    showCustomPopup(
-                      translations[language].addToFolderSuccess ||
-                        "Bookmark(s) moved successfully!",
-                      "success"
-                    )
-                    saveUIState()
-                  }
-                )
-              } else {
-                showCustomPopup(
-                  translations[language].errorUnexpected,
-                  "error",
-                  false
-                )
-              }
-            })
-          } else {
-            showCustomPopup(
-              translations[language].errorUnexpected,
-              "error",
-              false
-            )
-          }
-        }
+    moveBookmarksToFolder(bookmarkIds, targetFolderId, elements, () => {
+      elements.addToFolderPopup.classList.add("hidden")
+      elements.addToFolderSelect.classList.remove("error")
+      showCustomPopup(
+        translations[language].addToFolderSuccess ||
+          "Bookmark(s) moved successfully!",
+        "success"
       )
-    } else {
-      moveBookmarksToFolder(bookmarkIds, targetFolderId, elements, () => {
-        elements.addToFolderPopup.classList.add("hidden")
-        elements.newFolderInput.value = ""
-        elements.newFolderInput.classList.remove("error")
-        elements.addToFolderSelect.classList.remove("error")
-        showCustomPopup(
-          translations[language].addToFolderSuccess ||
-            "Bookmark(s) moved successfully!",
-          "success"
-        )
-        saveUIState()
-      })
-    }
+      saveUIState()
+    })
   }
 
   function handleCancel() {
     elements.addToFolderPopup.classList.add("hidden")
-    elements.newFolderInput.value = ""
-    elements.newFolderInput.classList.remove("error")
     elements.addToFolderSelect.classList.remove("error")
-    elements.newFolderInput.placeholder =
-      translations[language].newFolderPlaceholder
-  }
-
-  function handleCreateFolder() {
-    const folderName = elements.newFolderInput.value.trim()
-    if (!folderName) {
-      elements.newFolderInput.classList.add("error")
-      elements.newFolderInput.placeholder =
-        translations[language].emptyFolderError
-      elements.newFolderInput.focus()
-      return
-    }
-    safeChromeBookmarksCall(
-      "create",
-      [{ parentId: "2", title: folderName }],
-      (newFolder) => {
-        if (newFolder) {
-          getBookmarkTree((bookmarkTreeNodes) => {
-            if (bookmarkTreeNodes) {
-              uiState.bookmarkTree = bookmarkTreeNodes
-              uiState.folders = getFolders(bookmarkTreeNodes)
-              elements.addToFolderSelect.innerHTML = `<option value="">${translations[language].selectFolder}</option>`
-              uiState.folders.forEach((folder) => {
-                if (folder.id !== "1" && folder.id !== "2") {
-                  const option = document.createElement("option")
-                  option.value = folder.id
-                  option.textContent = folder.title
-                  elements.addToFolderSelect.appendChild(option)
-                }
-              })
-              elements.addToFolderSelect.value = newFolder.id
-              elements.newFolderInput.value = ""
-              elements.newFolderInput.classList.remove("error")
-              elements.newFolderInput.placeholder =
-                translations[language].newFolderPlaceholder
-              showCustomPopup(
-                translations[language].createFolderSuccess ||
-                  "Folder created successfully!",
-                "success"
-              )
-              saveUIState()
-            } else {
-              showCustomPopup(
-                translations[language].errorUnexpected,
-                "error",
-                false
-              )
-            }
-          })
-        } else {
-          showCustomPopup(
-            translations[language].errorUnexpected,
-            "error",
-            false
-          )
-        }
-      }
-    )
-  }
-
-  function handleKeypress(e) {
-    if (e.key === "Enter") {
-      elements.createNewFolderButton.click()
-    }
-  }
-
-  function handleKeydown(e) {
-    if (e.key === "Escape") {
-      elements.addToFolderCancelButton.click()
-    }
   }
 
   function handleSelectKeypress(e) {
@@ -269,13 +127,13 @@ export function setupAddToFolderListeners(elements) {
 
   function handleAddToFolderButton() {
     console.log("Add to folder button clicked!")
-    console.log("Selected bookmarks:", Array.from(uiState.selectedBookmarks))
-    if (uiState.selectedBookmarks.size > 0) {
+    console.log("Selected bookmarks:", Array.from(selectedBookmarks))
+    if (selectedBookmarks.size > 0) {
       console.log(
         "Opening popup with bookmarkIds:",
-        Array.from(uiState.selectedBookmarks)
+        Array.from(selectedBookmarks)
       )
-      openAddToFolderPopup(elements, Array.from(uiState.selectedBookmarks))
+      openAddToFolderPopup(elements, Array.from(selectedBookmarks))
     } else {
       console.warn("No bookmarks selected!")
       const language = localStorage.getItem("appLanguage") || "en"
