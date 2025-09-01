@@ -1,17 +1,18 @@
 // ./components/state.js
-export let uiState = {
+export const uiState = {
+  bookmarks: [],
   bookmarkTree: [],
   folders: [],
-  checkboxesVisible: false,
   searchQuery: "",
   selectedFolderId: "",
   sortType: "default",
-  bookmarks: [],
+  checkboxesVisible: false,
+  currentBookmarkId: null,
   selectedBookmarks: new Set(),
 }
 
 export let currentBookmarkId = null
-export const selectedBookmarks = new Set()
+export const selectedBookmarks = uiState.selectedBookmarks
 
 export function setBookmarks(bookmarks) {
   uiState.bookmarks = bookmarks
