@@ -1,3 +1,4 @@
+// utils.js
 export const translations = {
   en: {
     allBookmarks: "All Bookmarks",

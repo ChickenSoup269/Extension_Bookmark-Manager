@@ -1,4 +1,4 @@
-// bookmarks.js and events.js
+// bookmarks.js
 import {
   translations,
   safeChromeBookmarksCall,
