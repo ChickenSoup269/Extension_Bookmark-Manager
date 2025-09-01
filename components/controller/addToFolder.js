@@ -8,11 +8,11 @@ import {
   getFolders,
   moveBookmarksToFolder,
 } from "../bookmarks.js"
-
 import { uiState, saveUIState } from "../state.js"
 
 export function openAddToFolderPopup(elements, bookmarkIds) {
   const language = localStorage.getItem("appLanguage") || "en"
+  console.log("openAddToFolderPopup called with bookmarkIds:", bookmarkIds)
   elements.addToFolderSelect.innerHTML = `<option value="">${translations[language].selectFolder}</option>`
   uiState.folders.forEach((folder) => {
     if (folder.id !== "1" && folder.id !== "2") {
@@ -60,6 +60,8 @@ export function openAddToFolderPopup(elements, bookmarkIds) {
   elements.addToFolderPopup.removeEventListener("click", handlePopupClick)
   elements.addToFolderPopup.addEventListener("click", handlePopupClick)
 
+  console.log("Add to folder popup listeners attached")
+
   function handleSave() {
     const targetFolderId = elements.addToFolderSelect.value
     const newFolderName = elements.newFolderInput.value.trim()
@@ -72,6 +74,7 @@ export function openAddToFolderPopup(elements, bookmarkIds) {
     }
 
     if (bookmarkIds.length === 0) {
+      console.warn("No bookmarks provided to handleSave:", bookmarkIds)
       showCustomPopup(
         translations[language].noBookmarksSelected,
         "error",
@@ -250,10 +253,36 @@ export function openAddToFolderPopup(elements, bookmarkIds) {
 
 export function setupAddToFolderListeners(elements) {
   if (elements.addToFolderButton) {
-    elements.addToFolderButton.addEventListener("click", () => {
-      if (selectedBookmarks.size > 0) {
-        openAddToFolderPopup(elements, Array.from(selectedBookmarks))
-      }
-    })
+    console.log("Attaching listener to addToFolderButton")
+    elements.addToFolderButton.removeEventListener(
+      "click",
+      handleAddToFolderButton
+    )
+    elements.addToFolderButton.addEventListener(
+      "click",
+      handleAddToFolderButton
+    )
+  } else {
+    console.error("addToFolderButton not found in elements!")
+  }
+
+  function handleAddToFolderButton() {
+    console.log("Add to folder button clicked!")
+    console.log("Selected bookmarks:", Array.from(uiState.selectedBookmarks))
+    if (uiState.selectedBookmarks.size > 0) {
+      console.log(
+        "Opening popup with bookmarkIds:",
+        Array.from(uiState.selectedBookmarks)
+      )
+      openAddToFolderPopup(elements, Array.from(uiState.selectedBookmarks))
+    } else {
+      console.warn("No bookmarks selected!")
+      const language = localStorage.getItem("appLanguage") || "en"
+      showCustomPopup(
+        translations[language].noBookmarksSelected,
+        "error",
+        false
+      )
+    }
   }
 }

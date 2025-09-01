@@ -212,28 +212,36 @@ export function showCustomPopup(
   }
 
   try {
+    console.log("Setting popup title")
     title.textContent =
       type === "success"
         ? translations[language].successTitle
         : translations[language].errorTitle
+    console.log("Setting popup message")
     messageEl.textContent = message
+    console.log("Removing hidden class from popup")
     popup.classList.remove("hidden")
+    console.log("Popup class 'hidden' removed")
 
     const isDarkMode = document.body.classList.contains("dark-theme")
+    console.log("Applying theme:", isDarkMode ? "dark-theme" : "light-theme")
     popup.classList.toggle("light-theme", !isDarkMode)
     popup.classList.toggle("dark-theme", isDarkMode)
 
     const closePopup = () => {
+      console.log("Closing custom popup")
       popup.classList.add("hidden")
       document.removeEventListener("keydown", handleKeydown)
     }
 
+    console.log("Setting up OK button handler")
     okButton.onclick = () => {
       closePopup()
       if (onConfirm) onConfirm()
     }
 
     if (cancelButton) {
+      console.log("Configuring cancel button, showCancel:", showCancel)
       if (showCancel) {
         cancelButton.classList.remove("hidden")
         cancelButton.onclick = () => closePopup()
@@ -255,9 +263,11 @@ export function showCustomPopup(
         closePopup()
       }
     }
+    console.log("Adding keydown event listener")
     document.addEventListener("keydown", handleKeydown)
 
     if (type === "success" && autoClose && !onConfirm) {
+      console.log("Setting auto-close timeout")
       setTimeout(closePopup, 3000)
     }
   } catch (error) {
@@ -285,20 +295,29 @@ export function showCustomConfirm(message, onConfirm, onCancel) {
   }
 
   try {
+    console.log("Setting confirm popup title")
     title.textContent = translations[language].confirmTitle || "Confirm"
+    console.log("Setting confirm popup message")
     messageEl.textContent = message
+    console.log("Removing hidden class from confirm popup")
     popup.classList.remove("hidden")
 
     const cancelButton = document.createElement("button")
     cancelButton.className = "button cancel"
     cancelButton.textContent = translations[language].cancel || "Cancel"
+    console.log("Appending cancel button to buttons container")
     buttonsContainer.appendChild(cancelButton)
 
     const isDarkMode = document.body.classList.contains("dark-theme")
+    console.log(
+      "Applying theme to confirm popup:",
+      isDarkMode ? "dark-theme" : "light-theme"
+    )
     popup.classList.toggle("light-theme", !isDarkMode)
     popup.classList.toggle("dark-theme", isDarkMode)
 
     const closePopup = () => {
+      console.log("Closing confirm popup")
       popup.classList.add("hidden")
       if (buttonsContainer.contains(cancelButton)) {
         buttonsContainer.removeChild(cancelButton)
@@ -306,16 +325,19 @@ export function showCustomConfirm(message, onConfirm, onCancel) {
       document.removeEventListener("keydown", handleKeydown)
     }
     okButton.onclick = () => {
+      console.log("OK button clicked for confirm")
       onConfirm()
       closePopup()
     }
     cancelButton.onclick = () => {
+      console.log("Cancel button clicked for confirm")
       if (onCancel) onCancel()
       closePopup()
     }
 
     popup.onclick = (e) => {
       if (e.target === popup) {
+        console.log("Clicked outside confirm popup")
         if (onCancel) onCancel()
         closePopup()
       }
@@ -323,13 +345,16 @@ export function showCustomConfirm(message, onConfirm, onCancel) {
 
     const handleKeydown = (e) => {
       if (e.key === "Enter") {
+        console.log("Enter key pressed for confirm")
         onConfirm()
         closePopup()
       } else if (e.key === "Escape") {
+        console.log("Escape key pressed for confirm")
         if (onCancel) onCancel()
         closePopup()
       }
     }
+    console.log("Adding keydown event listener for confirm")
     document.addEventListener("keydown", handleKeydown)
   } catch (error) {
     console.error("Error in showCustomConfirm:", error)

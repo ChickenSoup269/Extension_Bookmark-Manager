@@ -121,6 +121,10 @@ export function restoreUIState(elements, callback) {
 }
 
 export function renderFilteredBookmarks(bookmarkTreeNodes, elements) {
+  console.log(
+    "Starting renderFilteredBookmarks, bookmark count:",
+    bookmarkTreeNodes.length
+  )
   const bookmarks = flattenBookmarks(bookmarkTreeNodes)
   const folders = getFolders(bookmarkTreeNodes)
   setBookmarkTree(bookmarkTreeNodes)
@@ -144,6 +148,7 @@ export function renderFilteredBookmarks(bookmarkTreeNodes, elements) {
   renderBookmarks(filtered, elements)
   toggleFolderButtons(elements)
   saveUIState()
+  console.log("Finished renderFilteredBookmarks")
 }
 
 function populateFolderFilter(folders, elements) {
@@ -209,6 +214,7 @@ function renderBookmarks(bookmarksList, elements) {
   elements.folderFilter.value = uiState.selectedFolderId
   elements.sortFilter.value = uiState.sortType
 
+  console.log("Attaching listeners after render")
   attachSelectAllListener(elements)
   attachDropdownListeners(elements)
   setupBookmarkActionListeners(elements)
@@ -305,12 +311,18 @@ function attachSelectAllListener(elements) {
   selectAllCheckbox.addEventListener("change", handleSelectAll)
 
   function handleSelectAll(e) {
+    console.log("Select all checkbox changed, checked:", e.target.checked)
     const checkboxes = document.querySelectorAll(".bookmark-checkbox")
+    console.log("Found checkboxes:", checkboxes.length)
     if (e.target.checked) {
       checkboxes.forEach((cb) => {
         const bookmarkId = cb.dataset.id
-        cb.checked = true
-        selectedBookmarks.add(bookmarkId)
+        if (bookmarkId) {
+          cb.checked = true
+          selectedBookmarks.add(bookmarkId)
+        } else {
+          console.error("Missing data-id on checkbox:", cb)
+        }
       })
     } else {
       checkboxes.forEach((cb) => {
@@ -318,9 +330,17 @@ function attachSelectAllListener(elements) {
         selectedBookmarks.clear()
       })
     }
+    console.log(
+      "Updated selectedBookmarks after select all:",
+      Array.from(selectedBookmarks)
+    )
     elements.addToFolderButton.classList.toggle(
       "hidden",
       selectedBookmarks.size === 0
+    )
+    console.log(
+      "Add to folder button hidden:",
+      elements.addToFolderButton.classList.contains("hidden")
     )
   }
 }
