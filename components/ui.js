@@ -1,3 +1,4 @@
+// ui.js
 import { translations } from "./utils.js"
 import { flattenBookmarks, getFolders, isInFolder } from "./bookmarks.js"
 import {
@@ -8,7 +9,7 @@ import {
   setFolders,
   setBookmarkTree,
 } from "./state.js"
-import { attachDropdownListeners } from "./events.js" // Import to call after rendering
+import { attachDropdownListeners } from "./controller/dropdown.js"
 
 export function updateUILanguage(elements, language) {
   const t = translations[language] || translations.en

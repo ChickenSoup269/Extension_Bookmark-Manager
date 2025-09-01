@@ -1,5 +1,4 @@
 import {
-  updateUILanguage,
   updateTheme,
   restoreUIState,
   renderFilteredBookmarks,
