@@ -6,7 +6,7 @@ import {
   updateTheme,
   renderFilteredBookmarks,
 } from "../ui.js"
-import { uiState, saveUIState, selectedBookmarks } from "../state.js"
+import { uiState, saveUIState } from "../state.js"
 import { openRenameFolderPopup } from "./renameFolder.js"
 
 export function setupUIControlListeners(elements) {
@@ -40,7 +40,7 @@ export function setupUIControlListeners(elements) {
           : "none"
       })
     if (!uiState.checkboxesVisible) {
-      selectedBookmarks.clear()
+      uiState.selectedBookmarks.clear()
       elements.addToFolderButton.classList.add("hidden")
       document.querySelectorAll(".bookmark-checkbox").forEach((cb) => {
         cb.checked = false
@@ -141,19 +141,38 @@ export function setupUIControlListeners(elements) {
     elements.settingsMenu.classList.toggle("hidden")
   })
 
-  // Thêm sự kiện cho Rename Folder trong Settings
   elements.renameFolderOption.addEventListener("click", () => {
     openRenameFolderPopup(elements, "")
     elements.settingsMenu.classList.add("hidden")
   })
 
   document.addEventListener("click", (e) => {
+    const renamePopup = document.getElementById("rename-popup")
+    const renameFolderPopup = document.getElementById("rename-folder-popup")
+    const addToFolderPopup = document.getElementById("add-to-folder-popup")
+    const customPopup = document.getElementById("custom-popup")
+
+    if (
+      (renamePopup &&
+        !renamePopup.classList.contains("hidden") &&
+        !e.target.closest("#rename-save")) ||
+      (renameFolderPopup && !renameFolderPopup.classList.contains("hidden")) ||
+      (addToFolderPopup && !addToFolderPopup.classList.contains("hidden")) ||
+      (customPopup && !customPopup.classList.contains("hidden"))
+    ) {
+      console.log(
+        "Popup is open, skipping close of settings menu and dropdowns"
+      )
+      return
+    }
+
     if (
       !e.target.closest("#settings-button") &&
       !e.target.closest("#settings-menu") &&
       !e.target.closest(".dropdown-btn") &&
       !e.target.closest(".dropdown-menu")
     ) {
+      console.log("Closing settings menu and dropdowns")
       elements.settingsMenu.classList.add("hidden")
       document.querySelectorAll(".dropdown-menu").forEach((menu) => {
         menu.classList.add("hidden")

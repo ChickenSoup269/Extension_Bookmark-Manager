@@ -11,7 +11,6 @@ export const uiState = {
   selectedBookmarks: new Set(),
 }
 
-export let currentBookmarkId = null
 export const selectedBookmarks = uiState.selectedBookmarks
 
 export function setBookmarks(bookmarks) {
@@ -27,10 +26,17 @@ export function setBookmarkTree(bookmarkTree) {
 }
 
 export function setCurrentBookmarkId(id) {
-  currentBookmarkId = id
+  console.log(
+    "setCurrentBookmarkId called with id:",
+    id,
+    "previous value:",
+    uiState.currentBookmarkId
+  )
+  uiState.currentBookmarkId = id
 }
 
 export function saveUIState() {
+  console.log("Saving uiState, currentBookmarkId:", uiState.currentBookmarkId)
   const state = {
     uiState: {
       searchQuery: uiState.searchQuery,

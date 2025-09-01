@@ -7,138 +7,65 @@ import {
 } from "../utils.js"
 import { getBookmarkTree } from "../bookmarks.js"
 import { renderFilteredBookmarks } from "../ui.js"
-import { uiState, selectedBookmarks, setCurrentBookmarkId } from "../state.js"
+import { uiState, setCurrentBookmarkId } from "../state.js"
 import { openAddToFolderPopup } from "./addToFolder.js"
 
 export function setupBookmarkActionListeners(elements) {
-  // Rename Bookmark Popup Listeners
   if (elements.renameSave) {
-    elements.renameSave.addEventListener("click", () => {
-      const newTitle = elements.renameInput.value.trim()
-      const language = localStorage.getItem("appLanguage") || "en"
-      if (!newTitle) {
-        elements.renameInput.classList.add("error")
-        elements.renameInput.placeholder =
-          translations[language].emptyTitleError
-        elements.renameInput.focus()
-        return
-      }
-      if (!uiState.currentBookmarkId) {
-        showCustomPopup(translations[language].errorUnexpected, "error", false)
-        elements.renamePopup.classList.add("hidden")
-        return
-      }
-
-      safeChromeBookmarksCall(
-        "get",
-        [uiState.currentBookmarkId],
-        (bookmark) => {
-          if (bookmark && bookmark[0]) {
-            const parentId = bookmark[0].parentId
-            safeChromeBookmarksCall("getChildren", [parentId], (siblings) => {
-              const isDuplicate = siblings.some(
-                (sibling) =>
-                  sibling.id !== uiState.currentBookmarkId &&
-                  sibling.title.toLowerCase() === newTitle.toLowerCase()
-              )
-              if (isDuplicate) {
-                elements.renameInput.classList.add("error")
-                elements.renameInput.placeholder =
-                  translations[language].duplicateTitleError
-                elements.renameInput.focus()
-                return
-              }
-              safeChromeBookmarksCall(
-                "update",
-                [uiState.currentBookmarkId, { title: newTitle }],
-                (result) => {
-                  if (result) {
-                    getBookmarkTree((bookmarkTreeNodes) => {
-                      if (bookmarkTreeNodes) {
-                        renderFilteredBookmarks(bookmarkTreeNodes, elements)
-                        showCustomPopup(
-                          translations[language].renameSuccess ||
-                            "Bookmark renamed successfully!",
-                          "success"
-                        )
-                        setCurrentBookmarkId(null)
-                        elements.renamePopup.classList.add("hidden")
-                      } else {
-                        showCustomPopup(
-                          translations[language].errorUnexpected,
-                          "error",
-                          false
-                        )
-                      }
-                    })
-                  } else {
-                    showCustomPopup(
-                      translations[language].errorUnexpected,
-                      "error",
-                      false
-                    )
-                  }
-                }
-              )
-            })
-          } else {
-            showCustomPopup(
-              translations[language].errorUnexpected,
-              "error",
-              false
-            )
-            elements.renamePopup.classList.add("hidden")
-          }
-        }
-      )
-    })
+    elements.renameSave.removeEventListener("click", handleRenameSave)
+    elements.renameSave.addEventListener("click", (e) =>
+      handleRenameSave(e, elements)
+    )
+  } else {
+    console.error("renameSave element not found")
   }
 
   if (elements.renameCancel) {
-    elements.renameCancel.addEventListener("click", () => {
-      elements.renamePopup.classList.add("hidden")
-      elements.renameInput.classList.remove("error")
-      elements.renameInput.value = ""
-      const language = localStorage.getItem("appLanguage") || "en"
-      elements.renameInput.placeholder =
-        translations[language].renamePlaceholder
-      setCurrentBookmarkId(null)
-    })
+    elements.renameCancel.removeEventListener("click", handleRenameCancel)
+    elements.renameCancel.addEventListener("click", (e) =>
+      handleRenameCancel(e, elements)
+    )
+  } else {
+    console.error("renameCancel element not found")
   }
 
   if (elements.renameInput) {
-    elements.renameInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        elements.renameSave.click()
-      }
-    })
-    elements.renameInput.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        elements.renameCancel.click()
-      }
-    })
+    elements.renameInput.removeEventListener(
+      "keypress",
+      handleRenameInputKeypress
+    )
+    elements.renameInput.addEventListener("keypress", (e) =>
+      handleRenameInputKeypress(e, elements)
+    )
+    elements.renameInput.removeEventListener(
+      "keydown",
+      handleRenameInputKeydown
+    )
+    elements.renameInput.addEventListener("keydown", (e) =>
+      handleRenameInputKeydown(e, elements)
+    )
+  } else {
+    console.error("renameInput element not found")
   }
 
   if (elements.renamePopup) {
-    elements.renamePopup.addEventListener("click", (e) => {
-      if (e.target === elements.renamePopup) {
-        elements.renameCancel.click()
-      }
-    })
+    elements.renamePopup.removeEventListener("click", handleRenamePopupClick)
+    elements.renamePopup.addEventListener("click", (e) =>
+      handleRenamePopupClick(e, elements)
+    )
+  } else {
+    console.error("renamePopup element not found")
   }
 
   if (elements.clearRenameButton) {
-    elements.clearRenameButton.addEventListener("click", () => {
-      elements.renameInput.value = ""
-      elements.renameInput.classList.remove("error")
-      const language = localStorage.getItem("appLanguage") || "en"
-      elements.renameInput.placeholder =
-        translations[language].renamePlaceholder
-      elements.renameInput.focus()
-    })
+    elements.clearRenameButton.removeEventListener("click", handleClearRename)
+    elements.clearRenameButton.addEventListener("click", (e) =>
+      handleClearRename(e, elements)
+    )
+  } else {
+    console.error("clearRenameButton element not found")
   }
 
-  // Dropdown and Checkbox Actions
   const addToFolderButtons = document.querySelectorAll(".add-to-folder")
   console.log("Found add-to-folder buttons:", addToFolderButtons.length)
   addToFolderButtons.forEach((button) => {
@@ -168,6 +95,207 @@ export function setupBookmarkActionListeners(elements) {
       handleBookmarkCheckbox(e, elements)
     )
   })
+}
+
+function handleRenameSave(e, elements) {
+  e.stopPropagation()
+  const newTitle = elements.renameInput.value.trim()
+  const language = localStorage.getItem("appLanguage") || "en"
+  console.log(
+    "handleRenameSave called, currentBookmarkId:",
+    uiState.currentBookmarkId,
+    "newTitle:",
+    newTitle
+  )
+
+  if (!newTitle) {
+    console.log("Empty title entered")
+    elements.renameInput.classList.add("error")
+    elements.renameInput.placeholder = translations[language].emptyTitleError
+    elements.renameInput.focus()
+    return
+  }
+
+  if (!uiState.currentBookmarkId) {
+    console.error("No currentBookmarkId set")
+    showCustomPopup(
+      translations[language].errorNoBookmarkSelected || "No bookmark selected",
+      "error",
+      false
+    )
+    elements.renamePopup.classList.add("hidden")
+    return
+  }
+
+  safeChromeBookmarksCall("get", [uiState.currentBookmarkId], (bookmark) => {
+    if (chrome.runtime.lastError) {
+      console.error(
+        "Error retrieving bookmark:",
+        chrome.runtime.lastError.message
+      )
+      showCustomPopup(
+        translations[language].errorUnexpected ||
+          "An unexpected error occurred",
+        "error",
+        false
+      )
+      elements.renamePopup.classList.add("hidden")
+      return
+    }
+
+    if (!bookmark || !bookmark[0]) {
+      console.error("Bookmark not found for ID:", uiState.currentBookmarkId)
+      showCustomPopup(
+        translations[language].bookmarkNotFound || "Bookmark not found",
+        "error",
+        false
+      )
+      elements.renamePopup.classList.add("hidden")
+      return
+    }
+
+    if (!bookmark[0].url) {
+      console.error(
+        "Selected item is not a bookmark, ID:",
+        uiState.currentBookmarkId
+      )
+      showCustomPopup(
+        translations[language].errorNotABookmark ||
+          "Selected item is not a bookmark",
+        "error",
+        false
+      )
+      elements.renamePopup.classList.add("hidden")
+      return
+    }
+
+    const parentId = bookmark[0].parentId
+    safeChromeBookmarksCall("getChildren", [parentId], (siblings) => {
+      if (chrome.runtime.lastError) {
+        console.error(
+          "Error retrieving siblings:",
+          chrome.runtime.lastError.message
+        )
+        showCustomPopup(
+          translations[language].errorUnexpected ||
+            "An unexpected error occurred",
+          "error",
+          false
+        )
+        elements.renamePopup.classList.add("hidden")
+        return
+      }
+
+      const isDuplicate = siblings.some(
+        (sibling) =>
+          sibling.id !== uiState.currentBookmarkId &&
+          sibling.title.toLowerCase() === newTitle.toLowerCase()
+      )
+      if (isDuplicate) {
+        console.log("Duplicate title found:", newTitle)
+        elements.renameInput.classList.add("error")
+        elements.renameInput.placeholder =
+          translations[language].duplicateTitleError
+        elements.renameInput.focus()
+        return
+      }
+
+      safeChromeBookmarksCall(
+        "update",
+        [uiState.currentBookmarkId, { title: newTitle }],
+        (result) => {
+          if (chrome.runtime.lastError) {
+            console.error(
+              "Error updating bookmark:",
+              chrome.runtime.lastError.message
+            )
+            showCustomPopup(
+              translations[language].errorUnexpected ||
+                "An unexpected error occurred",
+              "error",
+              false
+            )
+            elements.renamePopup.classList.add("hidden")
+            return
+          }
+
+          if (result) {
+            console.log(
+              "Bookmark updated successfully, ID:",
+              uiState.currentBookmarkId
+            )
+            getBookmarkTree((bookmarkTreeNodes) => {
+              if (bookmarkTreeNodes) {
+                renderFilteredBookmarks(bookmarkTreeNodes, elements)
+                showCustomPopup(
+                  translations[language].renameSuccess ||
+                    "Bookmark renamed successfully!",
+                  "success"
+                )
+                setCurrentBookmarkId(null)
+                elements.renamePopup.classList.add("hidden")
+              } else {
+                console.error("Failed to retrieve bookmark tree")
+                showCustomPopup(
+                  translations[language].errorUnexpected ||
+                    "An unexpected error occurred",
+                  "error",
+                  false
+                )
+              }
+            })
+          } else {
+            console.error("Bookmark update returned null")
+            showCustomPopup(
+              translations[language].errorUnexpected ||
+                "An unexpected error occurred",
+              "error",
+              false
+            )
+            elements.renamePopup.classList.add("hidden")
+          }
+        }
+      )
+    })
+  })
+}
+
+function handleRenameCancel(e, elements) {
+  e.stopPropagation()
+  console.log("handleRenameCancel called, resetting currentBookmarkId")
+  elements.renamePopup.classList.add("hidden")
+  elements.renameInput.classList.remove("error")
+  elements.renameInput.value = ""
+  const language = localStorage.getItem("appLanguage") || "en"
+  elements.renameInput.placeholder = translations[language].renamePlaceholder
+  setCurrentBookmarkId(null)
+}
+
+function handleRenameInputKeypress(e, elements) {
+  if (e.key === "Enter") {
+    elements.renameSave.click()
+  }
+}
+
+function handleRenameInputKeydown(e, elements) {
+  if (e.key === "Escape") {
+    elements.renameCancel.click()
+  }
+}
+
+function handleRenamePopupClick(e, elements) {
+  if (e.target === elements.renamePopup) {
+    elements.renameCancel.click()
+  }
+}
+
+function handleClearRename(e, elements) {
+  e.stopPropagation()
+  elements.renameInput.value = ""
+  elements.renameInput.classList.remove("error")
+  const language = localStorage.getItem("appLanguage") || "en"
+  elements.renameInput.placeholder = translations[language].renamePlaceholder
+  elements.renameInput.focus()
 }
 
 function handleAddToFolder(e, elements) {
@@ -204,8 +332,10 @@ function handleDeleteBookmark(e, elements) {
             "success"
           )
         } else {
+          console.error("Failed to retrieve bookmark tree")
           showCustomPopup(
-            translations[language].errorUnexpected,
+            translations[language].errorUnexpected ||
+              "An unexpected error occurred",
             "error",
             false
           )
@@ -221,13 +351,13 @@ function handleRenameBookmark(e, elements) {
   const bookmarkId = e.target.dataset.id
   const language = localStorage.getItem("appLanguage") || "en"
   console.log("handleRenameBookmark called, bookmarkId:", bookmarkId)
+
   if (!bookmarkId) {
     console.error("Bookmark ID is undefined in handleRenameBookmark")
     showCustomPopup(translations[language].errorUnexpected, "error", false)
     return
   }
 
-  // Re-query DOM elements
   const renamePopup = document.getElementById("rename-popup")
   const renameInput = document.getElementById("rename-input")
   if (!renamePopup || !renameInput) {
@@ -242,76 +372,65 @@ function handleRenameBookmark(e, elements) {
     )
     return
   }
-  if (!document.body.contains(renamePopup)) {
-    console.error("Rename popup is not in the DOM")
-    showCustomPopup(
-      translations[language].popupNotFound || "Rename popup not found",
-      "error",
-      false
-    )
-    return
-  }
 
-  try {
-    console.log("Validating rename popup elements")
-    setCurrentBookmarkId(bookmarkId)
-    renameInput.value = ""
-    renameInput.classList.remove("error")
-    renameInput.placeholder = translations[language].renamePlaceholder
-    console.log("Setting up rename popup, elements:", {
-      renamePopupDisplay: getComputedStyle(renamePopup).display,
-      hiddenClass: renamePopup.classList.contains("hidden"),
-    })
-    setTimeout(() => {
-      try {
-        console.log("Attempting to show rename popup")
-        renamePopup.classList.remove("hidden")
-        console.log("Rename popup class 'hidden' removed")
-        renameInput.focus()
-        console.log("Rename input focused")
-        safeChromeBookmarksCall("get", [bookmarkId], (bookmark) => {
-          if (chrome.runtime.lastError) {
-            console.error(
-              "Chrome bookmarks API error:",
-              chrome.runtime.lastError.message
-            )
-            showCustomPopup(
-              translations[language].errorUnexpected,
-              "error",
-              false
-            )
-            renamePopup.classList.add("hidden")
-            return
-          }
-          if (bookmark && bookmark[0]) {
-            console.log("Bookmark retrieved:", bookmark[0])
-            renameInput.value = bookmark[0].title || ""
-            console.log("Rename input value set to:", renameInput.value)
-          } else {
-            console.error("Bookmark not found for ID:", bookmarkId)
-            showCustomPopup(
-              translations[language].bookmarkNotFound || "Bookmark not found",
-              "error",
-              false
-            )
-            renamePopup.classList.add("hidden")
-          }
-        })
-      } catch (error) {
-        console.error("Error showing rename popup:", error)
-        showCustomPopup(translations[language].errorUnexpected, "error", false)
+  console.log("Setting currentBookmarkId:", bookmarkId)
+  setCurrentBookmarkId(bookmarkId)
+  renameInput.value = ""
+  renameInput.classList.remove("error")
+  renameInput.placeholder = translations[language].renamePlaceholder
+  renamePopup.classList.remove("hidden")
+  renameInput.focus()
+
+  safeChromeBookmarksCall("get", [bookmarkId], (bookmark) => {
+    if (chrome.runtime.lastError) {
+      console.error(
+        "Error retrieving bookmark:",
+        chrome.runtime.lastError.message
+      )
+      showCustomPopup(
+        translations[language].errorUnexpected ||
+          "An unexpected error occurred",
+        "error",
+        false
+      )
+      renamePopup.classList.add("hidden")
+      setCurrentBookmarkId(null)
+      return
+    }
+
+    if (bookmark && bookmark[0]) {
+      console.log("Bookmark retrieved:", bookmark[0])
+      if (!bookmark[0].url) {
+        console.error("Selected item is not a bookmark, ID:", bookmarkId)
+        showCustomPopup(
+          translations[language].errorNotABookmark ||
+            "Selected item is not a bookmark",
+          "error",
+          false
+        )
         renamePopup.classList.add("hidden")
+        setCurrentBookmarkId(null)
+        return
       }
-    }, 200)
-  } catch (error) {
-    console.error("Error in handleRenameBookmark:", error)
-    showCustomPopup(translations[language].errorUnexpected, "error", false)
-    renamePopup.classList.add("hidden")
-  }
+      renameInput.value = bookmark[0].title || ""
+      console.log("Rename input value set to:", renameInput.value)
+    } else {
+      console.error("Bookmark not found for ID:", bookmarkId)
+      showCustomPopup(
+        translations[language].bookmarkNotFound || "Bookmark not found",
+        "error",
+        false
+      )
+      renamePopup.classList.add("hidden")
+      setCurrentBookmarkId(null)
+    }
+  })
+
   e.target.closest(".dropdown-menu").classList.add("hidden")
 }
 
 function handleBookmarkCheckbox(e, elements) {
+  e.stopPropagation()
   const bookmarkId = e.target.dataset.id
   if (!bookmarkId) {
     console.error("Bookmark ID is undefined in handleBookmarkCheckbox", {
@@ -327,14 +446,17 @@ function handleBookmarkCheckbox(e, elements) {
     e.target.checked
   )
   if (e.target.checked) {
-    selectedBookmarks.add(bookmarkId)
+    uiState.selectedBookmarks.add(bookmarkId)
   } else {
-    selectedBookmarks.delete(bookmarkId)
+    uiState.selectedBookmarks.delete(bookmarkId)
   }
-  console.log("Updated selectedBookmarks:", Array.from(selectedBookmarks))
+  console.log(
+    "Updated selectedBookmarks:",
+    Array.from(uiState.selectedBookmarks)
+  )
   elements.addToFolderButton.classList.toggle(
     "hidden",
-    selectedBookmarks.size === 0
+    uiState.selectedBookmarks.size === 0
   )
   console.log(
     "Add to folder button hidden:",
