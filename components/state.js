@@ -1,3 +1,4 @@
+// sate.js
 export let uiState = {
   bookmarkTree: [],
   folders: [],
@@ -5,10 +6,8 @@ export let uiState = {
   searchQuery: "",
   selectedFolderId: "",
   sortType: "default",
-  checkboxesVisible: false,
   bookmarks: [],
-  folders: [],
-  bookmarkTree: [],
+  selectedBookmarks: new Set(),
 }
 
 export let currentBookmarkId = null

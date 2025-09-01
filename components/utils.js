@@ -1,4 +1,3 @@
-// utils.js
 export const translations = {
   en: {
     allBookmarks: "All Bookmarks",
@@ -60,7 +59,6 @@ export const translations = {
     confirmTitle: "Confirm",
     successTitle: "Success",
     errorTitle: "Error",
-    confirmTitle: "Confirm",
     renameSuccess: "Bookmark renamed successfully!",
     deleteBookmarkSuccess: "Bookmark deleted successfully!",
     addToFolderSuccess: "Bookmark(s) added to folder successfully!",
@@ -154,11 +152,18 @@ export const translations = {
 
 export function safeChromeBookmarksCall(method, args, callback) {
   try {
+    if (!chrome || !chrome.bookmarks || !chrome.bookmarks[method]) {
+      console.error(`chrome.bookmarks.${method} is not available`)
+      const language = localStorage.getItem("appLanguage") || "en"
+      showCustomPopup(translations[language].errorUnexpected, "error", false)
+      callback(null)
+      return
+    }
     chrome.bookmarks[method](...args, (result) => {
       if (chrome.runtime.lastError) {
         console.error(`Error in ${method}:`, chrome.runtime.lastError)
         const language = localStorage.getItem("appLanguage") || "en"
-        alert(`Error: ${chrome.runtime.lastError.message}`)
+        showCustomPopup(translations[language].errorUnexpected, "error", false)
         callback(null)
         return
       }
@@ -167,7 +172,7 @@ export function safeChromeBookmarksCall(method, args, callback) {
   } catch (error) {
     console.error(`Error in ${method}:`, error)
     const language = localStorage.getItem("appLanguage") || "en"
-    alert(translations[language].errorUnexpected)
+    showCustomPopup(translations[language].errorUnexpected, "error", false)
     callback(null)
   }
 }
@@ -180,8 +185,6 @@ export function debounce(func, wait) {
   }
 }
 
-// code new
-// utils.js
 export function showCustomPopup(
   message,
   type = "success",
@@ -193,57 +196,72 @@ export function showCustomPopup(
   const title = document.getElementById("custom-popup-title")
   const messageEl = document.getElementById("custom-popup-message")
   const okButton = document.getElementById("custom-popup-ok")
-  const cancelButton = document.getElementById("custom-popup-cancel") // nhớ thêm trong HTML
+  const cancelButton = document.getElementById("custom-popup-cancel")
   const language = localStorage.getItem("appLanguage") || "en"
 
   console.log(`showCustomPopup called: type=${type}, message=${message}`)
-  title.textContent =
-    type === "success"
-      ? translations[language].successTitle
-      : translations[language].errorTitle
-  messageEl.textContent = message
-  popup.classList.remove("hidden")
-
-  const isDarkMode = document.body.classList.contains("dark-theme")
-  popup.classList.toggle("light-theme", !isDarkMode)
-  popup.classList.toggle("dark-theme", isDarkMode)
-
-  const closePopup = () => {
-    popup.classList.add("hidden")
-    document.removeEventListener("keydown", handleKeydown)
+  if (!popup || !title || !messageEl || !okButton) {
+    console.error("Custom popup elements missing", {
+      popup: !!popup,
+      title: !!title,
+      messageEl: !!messageEl,
+      okButton: !!okButton,
+      cancelButton: !!cancelButton,
+    })
+    return
   }
 
-  okButton.onclick = () => {
-    closePopup()
-    if (onConfirm) onConfirm() // gọi callback nếu có
-  }
+  try {
+    title.textContent =
+      type === "success"
+        ? translations[language].successTitle
+        : translations[language].errorTitle
+    messageEl.textContent = message
+    popup.classList.remove("hidden")
 
-  if (cancelButton) {
-    if (showCancel) {
-      cancelButton.classList.remove("hidden")
-      cancelButton.onclick = () => closePopup()
-    } else {
-      cancelButton.classList.add("hidden")
+    const isDarkMode = document.body.classList.contains("dark-theme")
+    popup.classList.toggle("light-theme", !isDarkMode)
+    popup.classList.toggle("dark-theme", isDarkMode)
+
+    const closePopup = () => {
+      popup.classList.add("hidden")
+      document.removeEventListener("keydown", handleKeydown)
     }
-  }
 
-  popup.onclick = (e) => {
-    if (e.target === popup) {
+    okButton.onclick = () => {
       closePopup()
+      if (onConfirm) onConfirm()
     }
-  }
 
-  const handleKeydown = (e) => {
-    if (e.key === "Enter") {
-      okButton.click()
-    } else if (e.key === "Escape") {
-      closePopup()
+    if (cancelButton) {
+      if (showCancel) {
+        cancelButton.classList.remove("hidden")
+        cancelButton.onclick = () => closePopup()
+      } else {
+        cancelButton.classList.add("hidden")
+      }
     }
-  }
-  document.addEventListener("keydown", handleKeydown)
 
-  if (type === "success" && autoClose && !onConfirm) {
-    setTimeout(closePopup, 3000)
+    popup.onclick = (e) => {
+      if (e.target === popup) {
+        closePopup()
+      }
+    }
+
+    const handleKeydown = (e) => {
+      if (e.key === "Enter") {
+        okButton.click()
+      } else if (e.key === "Escape") {
+        closePopup()
+      }
+    }
+    document.addEventListener("keydown", handleKeydown)
+
+    if (type === "success" && autoClose && !onConfirm) {
+      setTimeout(closePopup, 3000)
+    }
+  } catch (error) {
+    console.error("Error in showCustomPopup:", error)
   }
 }
 
@@ -255,50 +273,65 @@ export function showCustomConfirm(message, onConfirm, onCancel) {
   const language = localStorage.getItem("appLanguage") || "en"
   const buttonsContainer = popup.querySelector(".rename-popup-buttons")
 
-  title.textContent = translations[language].confirmTitle || "Confirm"
-  messageEl.textContent = message
-  popup.classList.remove("hidden")
+  if (!popup || !title || !messageEl || !okButton || !buttonsContainer) {
+    console.error("Custom confirm popup elements missing", {
+      popup: !!popup,
+      title: !!title,
+      messageEl: !!messageEl,
+      okButton: !!okButton,
+      buttonsContainer: !!buttonsContainer,
+    })
+    return
+  }
 
-  const cancelButton = document.createElement("button")
-  cancelButton.className = "button cancel"
-  cancelButton.textContent = translations[language].cancel || "Cancel"
-  buttonsContainer.appendChild(cancelButton)
+  try {
+    title.textContent = translations[language].confirmTitle || "Confirm"
+    messageEl.textContent = message
+    popup.classList.remove("hidden")
 
-  const isDarkMode = document.body.classList.contains("dark-theme")
-  popup.classList.toggle("light-theme", !isDarkMode)
-  popup.classList.toggle("dark-theme", isDarkMode)
+    const cancelButton = document.createElement("button")
+    cancelButton.className = "button cancel"
+    cancelButton.textContent = translations[language].cancel || "Cancel"
+    buttonsContainer.appendChild(cancelButton)
 
-  const closePopup = () => {
-    popup.classList.add("hidden")
-    if (buttonsContainer.contains(cancelButton)) {
-      buttonsContainer.removeChild(cancelButton)
+    const isDarkMode = document.body.classList.contains("dark-theme")
+    popup.classList.toggle("light-theme", !isDarkMode)
+    popup.classList.toggle("dark-theme", isDarkMode)
+
+    const closePopup = () => {
+      popup.classList.add("hidden")
+      if (buttonsContainer.contains(cancelButton)) {
+        buttonsContainer.removeChild(cancelButton)
+      }
+      document.removeEventListener("keydown", handleKeydown)
     }
-    document.removeEventListener("keydown", handleKeydown)
-  }
-  okButton.onclick = () => {
-    onConfirm()
-    closePopup()
-  }
-  cancelButton.onclick = () => {
-    if (onCancel) onCancel()
-    closePopup()
-  }
-
-  popup.onclick = (e) => {
-    if (e.target === popup) {
-      if (onCancel) onCancel()
-      closePopup()
-    }
-  }
-
-  const handleKeydown = (e) => {
-    if (e.key === "Enter") {
+    okButton.onclick = () => {
       onConfirm()
       closePopup()
-    } else if (e.key === "Escape") {
+    }
+    cancelButton.onclick = () => {
       if (onCancel) onCancel()
       closePopup()
     }
+
+    popup.onclick = (e) => {
+      if (e.target === popup) {
+        if (onCancel) onCancel()
+        closePopup()
+      }
+    }
+
+    const handleKeydown = (e) => {
+      if (e.key === "Enter") {
+        onConfirm()
+        closePopup()
+      } else if (e.key === "Escape") {
+        if (onCancel) onCancel()
+        closePopup()
+      }
+    }
+    document.addEventListener("keydown", handleKeydown)
+  } catch (error) {
+    console.error("Error in showCustomConfirm:", error)
   }
-  document.addEventListener("keydown", handleKeydown)
 }

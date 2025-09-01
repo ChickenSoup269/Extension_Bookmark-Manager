@@ -9,6 +9,7 @@ import {
   setBookmarkTree,
 } from "./state.js"
 import { attachDropdownListeners } from "./controller/dropdown.js"
+import { setupBookmarkActionListeners } from "./controller/bookmarkActions.js"
 
 export function updateUILanguage(elements, language) {
   const t = translations[language] || translations.en
@@ -25,7 +26,7 @@ export function updateUILanguage(elements, language) {
   elements.createFolderButton.textContent = t.createFolder
   elements.addToFolderButton.textContent = t.addToFolder
   elements.deleteFolderButton.textContent = t.deleteFolder
-  elements.renameFolderButton.textContent = t.renameFolder // Cập nhật văn bản nút Rename Folder
+  elements.renameFolderButton.textContent = t.renameFolder
   elements.exportBookmarksOption.textContent = t.exportBookmarks
   elements.toggleCheckboxesButton.textContent = uiState.checkboxesVisible
     ? t.hideCheckboxes
@@ -141,7 +142,7 @@ export function renderFilteredBookmarks(bookmarkTreeNodes, elements) {
     )
   }
   renderBookmarks(filtered, elements)
-  toggleFolderButtons(elements) // Cập nhật hàm để kiểm soát cả hai nút
+  toggleFolderButtons(elements)
   saveUIState()
 }
 
@@ -210,7 +211,8 @@ function renderBookmarks(bookmarksList, elements) {
 
   attachSelectAllListener(elements)
   attachDropdownListeners(elements)
-  console.log("Dropdown listeners attached after render")
+  setupBookmarkActionListeners(elements)
+  console.log("Bookmark action listeners attached after render")
 }
 
 function sortBookmarks(bookmarksList, sortType) {
